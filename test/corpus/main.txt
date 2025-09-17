@@ -1,0 +1,237 @@
+===
+Identifier
+===
+Valid._Identifier02 {}
+---
+(source_file
+    (identifier)
+    (group))
+
+===
+Single Char Identifier
+===
+V {}
+---
+(source_file
+    (identifier)
+    (group))
+
+
+===
+Invalid Identifier
+===
+..NotOK {}
+---
+(source_file
+    (ERROR
+        (UNEXPECTED '.'))
+    (identifier)
+    (group))
+
+===
+Invalid Identifier Space
+===
+. NotOK {}
+---
+(source_file
+    (ERROR
+        (UNEXPECTED ' '))
+    (identifier)
+    (group))
+
+
+===
+Weird But Valid Identifier
+===
+._OKAY {}
+---
+(source_file
+    (identifier)
+    (group))
+
+===
+Single Line Comment
+===
+Comment {}
+// Single line comment
+---
+(source_file
+    (identifier)
+    (group)
+    (comment))
+
+===
+Multi Line Comment
+===
+Comment {}
+/*
+Single line comment
+*/
+---
+(source_file
+    (identifier)
+    (group)
+    (comment))
+
+===
+Simple String
+===
+String = "Hi there."
+---
+(source_file
+    (identifier)
+    (value
+        (string)))
+
+===
+Empty String
+===
+String = ""
+---
+(source_file
+    (identifier)
+    (value
+        (string)))
+
+===
+String With Quotes
+===
+String = "\""
+---
+(source_file
+    (identifier)
+    (value
+        (string)))
+
+===
+Invalid String
+===
+String = "
+"
+---
+(ERROR
+    (identifier))
+
+===
+Lists
+===
+List = []
+---
+(source_file
+    (identifier)
+    (list))
+
+===
+Nested Lists
+===
+List = [[]]
+---
+(source_file
+    (identifier)
+    (list
+        (list)))
+
+===
+Named Nested Lists
+===
+List
+[
+    Second
+    []
+]
+---
+(source_file
+    (identifier)
+    (list
+        (identifier)
+        (list)))
+
+===
+Groups
+===
+Group = {}
+---
+(source_file
+    (identifier)
+    (group))
+
+===
+Nested Groups
+===
+Group = {{}}
+---
+(source_file
+    (identifier)
+    (group
+        (group)))
+
+===
+Named Nested Groups
+===
+Group
+{
+    Second
+    {}
+}
+---
+(source_file
+    (identifier)
+    (group
+        (identifier)
+        (group)))
+
+===
+Inheritance Group
+===
+Object : Other
+{}
+---
+(source_file
+    (identifier)
+    (extension
+        (internal_reference
+            (identifier)))
+    (group))
+
+===
+Multi Inheritance Group
+===
+Object : Other, Other2 {}
+---
+(source_file
+    (identifier)
+    (extension
+        (internal_reference
+            (identifier)))
+    (extension
+        (internal_reference
+            (identifier)))
+    (group))
+
+===
+Inheritance Group
+===
+Object : Other
+[]
+---
+(source_file
+    (identifier)
+    (extension
+        (internal_reference
+            (identifier)))
+    (list))
+
+===
+Multi Inheritance Group
+===
+Object : Other, Other2 []
+---
+(source_file
+    (identifier)
+    (extension
+        (internal_reference
+            (identifier)))
+    (extension
+        (internal_reference
+            (identifier)))
+    (list))
