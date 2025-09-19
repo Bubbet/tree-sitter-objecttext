@@ -13,6 +13,9 @@ module.exports = grammar({
     /[\t\r\n \\]/,
     $.comment,
   ],
+  supertypes: $ => [
+    $.expression,
+  ],
   rules: {
     // TODO: add the actual grammar rules
     source_file: $ => $._assignment,
@@ -22,15 +25,15 @@ module.exports = grammar({
     comment: $ => token(
       choice(seq("//", /.*/), seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
     ),
-    internal_reference: $ => seq($.identifier, repeat(seq('/', $.identifier))),
-    path_reference: $ => seq('<', /.+/, '>', repeat(seq('/', $.identifier))),
+    internal_reference: $ => prec.right(seq($.identifier, repeat(seq('/', $.identifier)))),
+    path_reference: $ => prec.right(seq('<', /.+/, '>', repeat(seq('/', $.identifier)))),
     reference: $ => seq('&', choice(
       $.internal_reference,
       $.path_reference,
     )),
     value: $ => choice(
       $.bare_word,
-      $.reference,
+      $.expression,
       $.string,
       $.verbatim,
     ),
@@ -63,5 +66,40 @@ module.exports = grammar({
 
     _list: $ => seq('[', repeat($._block_value), ']'),
     _group: $ => seq('{', repeat($._block_value), '}'),
+
+    expression: $ => choice(
+      $.number,
+      $.reference,
+      $.binary_expression,
+      $.urinary_expression,
+      $.parenthesized_expression,
+      //$.function_call, // TODO breaks bare_word for some reason
+    ),
+    urinary_expression: $ => choice(
+      prec.left(seq('-', $.expression))
+    ),
+    binary_expression: $ => choice(
+      prec.left(seq($.expression, choice('*', '/'), $.expression)),
+      prec.left(seq($.expression, choice('+', '-'), $.expression)),
+    ),
+    parenthesized_expression: $ => seq(
+      '(',
+      $.expression,
+      ')',
+    ),
+    function_call: $ => seq(
+      field("name", $.identifier),
+      '(',
+      commaSep($.expression),
+      ')',
+    ),
+    number: $ => /-?\d*\.?\d+%?d?/,
   }
 });
+
+/**
+ * @param {RuleOrLiteral} rule
+ */
+function commaSep(rule) {
+  return optional(seq(rule, repeat(seq(',', rule))));
+}

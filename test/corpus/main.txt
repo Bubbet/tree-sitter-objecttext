@@ -258,3 +258,68 @@ Object : Other, Other2 []
         (extension
             (internal_reference
                 (identifier)))))
+
+===
+Binary Expression
+===
+Test = 3 * 1
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (binary_expression
+                (number)
+                (number)))))
+
+
+===
+Binary Expression Parenthesis
+===
+Test = (3 * 1)
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (parenthesized_expression
+                (binary_expression
+                    (number)
+                    (number))))))
+
+===
+Binary Expression Reference
+===
+Test = 3 * (&Test2)
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (binary_expression
+                (number)
+                (parenthesized_expression
+                    (reference
+                        (internal_reference
+                            (identifier))))))))
+
+===
+Function Call
+===
+HEAT_PER_INTERVAL = ceil((&/OVERCLOCK/FIRING_HEAT_PER_SECOND) * (&Interval))
+---
+(source_file
+    (assignment
+        (identifier)
+        (function_call
+            (identifier)
+            (binary_expression
+                (parenthesized_expression
+                    (reference
+                        (internal_reference
+                            (identifier)
+                            (identifier))))
+                (parenthesized_expression
+                    (reference
+                        (internal_reference
+                            (identifier))))))))
