@@ -132,12 +132,8 @@ Invalid String
 String = "
 "
 ---
-(source_file
-      (assignment
-        (identifier)
-        (value
-          (bare_word)))
-      (ERROR))
+(ERROR
+    (identifier))
 
 ===
 Lists

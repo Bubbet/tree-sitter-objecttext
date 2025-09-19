@@ -18,10 +18,7 @@ module.exports = grammar({
     source_file: $ => $._assignment,
 
     // Periods can start identifiers but only when followed by another char two dots in a row at the start is not allowed.
-    identifier: $ => token(choice(
-      seq(/[A-Za-z0-9_]/, token.immediate(/[A-Za-z0-9_\.]*/)), // Normal Identifiers
-      seq('.', token.immediate(/[A-Za-z0-9_]/), token.immediate(/[A-Za-z0-9_\.]*/)), // Identifiers starting with a period.
-    )),
+    identifier: $ => /\.?[A-Za-z0-9_][A-Za-z0-9_\.]*/,
     comment: $ => token(
       choice(seq("//", /.*/), seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
     ),
@@ -37,7 +34,7 @@ module.exports = grammar({
       $.string,
       $.verbatim,
     ),
-    bare_word: $ => prec(-1, token.immediate(/\s*[^\[{"].*\r?\n$/)),
+    bare_word: $ => token.immediate(prec(-1, /\s*[^\[{"].*/)),
     string: $ => choice(
       '""',
       seq('"', repeat(token.immediate(choice(/[^\n"]/, /\\"/))), token.immediate('"')),

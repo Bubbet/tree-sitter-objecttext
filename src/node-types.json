@@ -19,11 +19,6 @@
     }
   },
   {
-    "type": "bare_word",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "extension",
     "named": true,
     "fields": {},
@@ -264,6 +259,10 @@
   {
     "type": "]",
     "named": false
+  },
+  {
+    "type": "bare_word",
+    "named": true
   },
   {
     "type": "comment",
