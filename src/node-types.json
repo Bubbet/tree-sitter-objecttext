@@ -1,5 +1,29 @@
 [
   {
+    "type": "assignment",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "value",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "bare_word",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "extension",
     "named": true,
     "fields": {},
@@ -21,11 +45,26 @@
   {
     "type": "group",
     "named": true,
-    "fields": {},
+    "fields": {
+      "key": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
         {
           "type": "extension",
           "named": true
@@ -35,15 +74,7 @@
           "named": true
         },
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
           "type": "list",
-          "named": true
-        },
-        {
-          "type": "value",
           "named": true
         }
       ]
@@ -73,6 +104,10 @@
       "required": false,
       "types": [
         {
+          "type": "assignment",
+          "named": true
+        },
+        {
           "type": "extension",
           "named": true
         },
@@ -86,10 +121,6 @@
         },
         {
           "type": "list",
-          "named": true
-        },
-        {
-          "type": "value",
           "named": true
         }
       ]
@@ -135,11 +166,11 @@
     "root": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
         {
-          "type": "extension",
+          "type": "assignment",
           "named": true
         },
         {
@@ -147,15 +178,7 @@
           "named": true
         },
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
           "type": "list",
-          "named": true
-        },
-        {
-          "type": "value",
           "named": true
         }
       ]
@@ -174,6 +197,10 @@
       "multiple": false,
       "required": true,
       "types": [
+        {
+          "type": "bare_word",
+          "named": true
+        },
         {
           "type": "reference",
           "named": true

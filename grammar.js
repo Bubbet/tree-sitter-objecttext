@@ -10,42 +10,13 @@
 module.exports = grammar({
   name: "objecttext",
   extras: $ => [
-    /[\t\n\r \\]/,
+    /[\t\r\n \\]/,
     $.comment,
   ],
   rules: {
     // TODO: add the actual grammar rules
-    source_file: $ => choice(
-      seq($.identifier, ':', repeat($.extension), choice($.list, $.group)),
-      seq($.identifier, optional('='), choice(
-        $.list,
-        $.group,
-      )),
-      seq($.identifier, '=', $.value),
-    ),
-    _block_value: $ => choice(
-      seq(optional($.identifier), ':', repeat1($.extension), choice($.list, $.group)),
-      seq(optional(seq($.identifier, optional('='))), choice(
-        $.list,
-        $.group,
-      )),
-      seq($.identifier, '=', $.value),
-    ),
-    extension: $ => choice(
-      seq($.path_reference, /[;,]?/),
-      seq($.internal_reference, /[;,]?/),
-    ),
-    internal_reference: $ => seq($.identifier, repeat(seq('/', $.identifier))),
-    path_reference: $ => seq('<', /.+/, '>', repeat(seq('/', $.identifier))),
-    reference: $ => seq('&', choice(
-      $.internal_reference,
-      $.path_reference,
-    )),
-    value: $ => choice(
-      $.reference,
-      $.string,
-      $.verbatim,
-    ),
+    source_file: $ => $._assignment,
+
     // Periods can start identifiers but only when followed by another char two dots in a row at the start is not allowed.
     identifier: $ => token(choice(
       seq(/[A-Za-z0-9_]/, token.immediate(/[A-Za-z0-9_\.]*/)), // Normal Identifiers
@@ -54,11 +25,44 @@ module.exports = grammar({
     comment: $ => token(
       choice(seq("//", /.*/), seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
     ),
+    internal_reference: $ => seq($.identifier, repeat(seq('/', $.identifier))),
+    path_reference: $ => seq('<', /.+/, '>', repeat(seq('/', $.identifier))),
+    reference: $ => seq('&', choice(
+      $.internal_reference,
+      $.path_reference,
+    )),
+    value: $ => choice(
+      $.bare_word,
+      $.reference,
+      $.string,
+      $.verbatim,
+    ),
+    bare_word: $ => prec(-1, token.immediate(/\s*[^\[{"].*\r?\n$/)),
     string: $ => choice(
       '""',
       seq('"', repeat(token.immediate(choice(/[^\n"]/, /\\"/))), token.immediate('"')),
     ),
     verbatim: $ => seq('@"', /[^"]*/, '"'),
+
+    assignment: $ => seq($.identifier, '=', $.value),
+    _assignment: $ => choice(
+      $.assignment,
+      $.group,
+      $.list,
+    ),
+
+    group: $ => seq(field("key", $.identifier), choice(optional('='), seq(':', repeat($.extension))), $._group),
+    list: $ => seq($.identifier, choice(optional('='), seq(':', repeat($.extension))), $._list),
+
+    _block_value: $ => choice($._assignment,
+      alias(seq(optional(seq(':', repeat($.extension))), $._group), $.group),
+      alias(seq(optional(seq(':', repeat($.extension))), $._list), $.list),
+    ),
+
+    extension: $ => choice(
+      seq($.path_reference, /[;,]?/),
+      seq($.internal_reference, /[;,]?/),
+    ),
 
     _list: $ => seq('[', repeat($._block_value), ']'),
     _group: $ => seq('{', repeat($._block_value), '}'),

@@ -1,11 +1,20 @@
 ===
+Non Identifier Start
+:error
+===
+"Yes"
+---
+
+===
 Identifier
 ===
-Valid._Identifier02 {}
+Valid._Identifier02 = ""
 ---
 (source_file
-    (identifier)
-    (group))
+    (assignment
+        (identifier)
+        (value
+            (string))))
 
 ===
 Single Char Identifier
@@ -13,8 +22,8 @@ Single Char Identifier
 V {}
 ---
 (source_file
-    (identifier)
-    (group))
+    (group
+        key: (identifier)))
 
 
 ===
@@ -25,8 +34,8 @@ Invalid Identifier
 (source_file
     (ERROR
         (UNEXPECTED '.'))
-    (identifier)
-    (group))
+    (group
+        (identifier)))
 
 ===
 Invalid Identifier Space
@@ -36,8 +45,8 @@ Invalid Identifier Space
 (source_file
     (ERROR
         (UNEXPECTED ' '))
-    (identifier)
-    (group))
+    (group
+        (identifier)))
 
 
 ===
@@ -46,8 +55,8 @@ Weird But Valid Identifier
 ._OKAY {}
 ---
 (source_file
-    (identifier)
-    (group))
+    (group
+        (identifier)))
 
 ===
 Single Line Comment
@@ -56,8 +65,8 @@ Comment {}
 // Single line comment
 ---
 (source_file
-    (identifier)
-    (group)
+    (group
+        (identifier))
     (comment))
 
 ===
@@ -69,9 +78,20 @@ Single line comment
 */
 ---
 (source_file
-    (identifier)
-    (group)
+    (group
+        (identifier))
     (comment))
+
+===
+Bare Word
+===
+Test = some kind of text for a language file
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_word))))
 
 ===
 Simple String
@@ -79,9 +99,10 @@ Simple String
 String = "Hi there."
 ---
 (source_file
-    (identifier)
-    (value
-        (string)))
+    (assignment
+        (identifier)
+        (value
+            (string))))
 
 ===
 Empty String
@@ -89,9 +110,10 @@ Empty String
 String = ""
 ---
 (source_file
-    (identifier)
-    (value
-        (string)))
+    (assignment
+        (identifier)
+        (value
+            (string))))
 
 ===
 String With Quotes
@@ -99,9 +121,10 @@ String With Quotes
 String = "\""
 ---
 (source_file
-    (identifier)
-    (value
-        (string)))
+    (assignment
+        (identifier)
+        (value
+            (string))))
 
 ===
 Invalid String
@@ -109,8 +132,12 @@ Invalid String
 String = "
 "
 ---
-(ERROR
-    (identifier))
+(source_file
+      (assignment
+        (identifier)
+        (value
+          (bare_word)))
+      (ERROR))
 
 ===
 Lists
@@ -118,8 +145,8 @@ Lists
 List = []
 ---
 (source_file
-    (identifier)
-    (list))
+    (list
+        (identifier)))
 
 ===
 Nested Lists
@@ -127,8 +154,8 @@ Nested Lists
 List = [[]]
 ---
 (source_file
-    (identifier)
     (list
+        (identifier)
         (list)))
 
 ===
@@ -141,10 +168,10 @@ List
 ]
 ---
 (source_file
-    (identifier)
     (list
         (identifier)
-        (list)))
+        (list
+            (identifier))))
 
 ===
 Groups
@@ -152,8 +179,8 @@ Groups
 Group = {}
 ---
 (source_file
-    (identifier)
-    (group))
+    (group
+        (identifier)))
 
 ===
 Nested Groups
@@ -161,8 +188,8 @@ Nested Groups
 Group = {{}}
 ---
 (source_file
-    (identifier)
     (group
+        (identifier)
         (group)))
 
 ===
@@ -175,10 +202,10 @@ Group
 }
 ---
 (source_file
-    (identifier)
     (group
         (identifier)
-        (group)))
+        (group
+            (identifier))))
 
 ===
 Inheritance Group
@@ -187,11 +214,11 @@ Object : Other
 {}
 ---
 (source_file
-    (identifier)
-    (extension
-        (internal_reference
-            (identifier)))
-    (group))
+    (group
+        (identifier)
+        (extension
+            (internal_reference
+                (identifier)))))
 
 ===
 Multi Inheritance Group
@@ -199,14 +226,14 @@ Multi Inheritance Group
 Object : Other, Other2 {}
 ---
 (source_file
-    (identifier)
-    (extension
-        (internal_reference
-            (identifier)))
-    (extension
-        (internal_reference
-            (identifier)))
-    (group))
+    (group
+        (identifier)
+        (extension
+            (internal_reference
+                (identifier)))
+        (extension
+            (internal_reference
+                (identifier)))))
 
 ===
 Inheritance Group
@@ -215,11 +242,11 @@ Object : Other
 []
 ---
 (source_file
-    (identifier)
-    (extension
-        (internal_reference
-            (identifier)))
-    (list))
+    (list
+        (identifier)
+        (extension
+            (internal_reference
+                (identifier)))))
 
 ===
 Multi Inheritance Group
@@ -227,11 +254,11 @@ Multi Inheritance Group
 Object : Other, Other2 []
 ---
 (source_file
-    (identifier)
-    (extension
-        (internal_reference
-            (identifier)))
-    (extension
-        (internal_reference
-            (identifier)))
-    (list))
+    (list
+        (identifier)
+        (extension
+            (internal_reference
+                (identifier)))
+        (extension
+            (internal_reference
+                (identifier)))))
