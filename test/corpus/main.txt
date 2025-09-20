@@ -1,269 +1,78 @@
 ===
-Non Identifier Start
-:error
+Main
 ===
-"Yes"
+Test = "string"
+Test2 = @"test"
+test = {}
+Test : A {}
+Test : A, B []
+Test [
+    B
+    {}
+]
+Test [
+    {}
+]
+Test [
+    : Test
+    {}
+]
+Test : <file.rules>/Path {}
+Something [[]]
+Another [
+    "thing"
+    &<path.rules>/Thing
+    &<another.rules>
+    &thing
+    0.2
+    0.3 + 0.4
+    (&yes) + 0.4
+    (40 + 20) * 4
+    40d
+]
+BareWord = this stuff sucks nuts
 ---
+(source_file)
 
 ===
-Identifier
+Old
 ===
 Valid._Identifier02 = ""
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (string))))
-
-===
-Single Char Identifier
-===
 V {}
----
-(source_file
-    (group
-        (identifier)))
-
-
-===
-Invalid Identifier
-===
-..NotOK {}
----
-(source_file
-    (ERROR
-        (UNEXPECTED '.'))
-    (group
-        (identifier)))
-
-===
-Invalid Identifier Space
-===
-. NotOK {}
----
-(source_file
-    (ERROR
-        (UNEXPECTED ' '))
-    (group
-        (identifier)))
-
-
-===
-Weird But Valid Identifier
-===
 ._OKAY {}
----
-(source_file
-    (group
-        (identifier)))
-
-===
-Single Line Comment
-===
-Comment {}
 // Single line comment
----
-(source_file
-    (group
-        (identifier))
-    (comment))
-
-===
-Multi Line Comment
-===
-Comment {}
 /*
 Single line comment
 */
----
-(source_file
-    (group
-        (identifier))
-    (comment))
-
-===
-Bare Word
-===
 Test = some kind of text for a language file
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_word))))
-
-===
-Bare Chinese Word
-===
 CancelJump = 取消超空间跳跃
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_word))))
-
-===
-Simple String
-===
 String = "Hi there."
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (string))))
-
-===
-Empty String
-===
 String = ""
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (string))))
-
-===
-String With Quotes
-===
 String = "\""
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (string))))
-
-===
-Invalid String
-===
-String = "
-"
----
-(ERROR
-    (identifier))
-
-===
-Lists
-===
 List = []
----
-(source_file
-    (list
-        (identifier)))
-
-===
-List With Reference
-===
 Statuses
 [
 	&<fire/fire.rules>
 ]
----
-(source_file
-    (list
-        (identifier)
-        (value
-            (reference
-                (path_reference)))))
-
-===
-List With Numbers Comma Seperated
-===
 BaseAngularDamping = [0.4, 0.4]
----
-(source_file
-    (list
-        (identifier)
-        (value
-            (number))
-        (value
-            (number))))
-
-===
-List With References
-===
 Statuses
 [
 	&<fire/fire.rules>
 	&<scorched/scorched.rules>
 ]
----
-(source_file
-    (list
-        (identifier)
-        (value
-            (reference
-                (path_reference)))
-        (value
-            (reference
-                (path_reference)))))
-
-===
-Nested Lists
-===
 List = [[]]
----
-(source_file
-    (list
-        (identifier)
-        (list)))
-
-===
-Named Nested Lists
-===
 List
 [
     Second
     []
 ]
----
-(source_file
-    (list
-        (identifier)
-        (list
-            (identifier))))
-
-===
-Groups
-===
 Group = {}
----
-(source_file
-    (group
-        (identifier)))
-
-===
-Nested Groups
-===
 Group = {{}}
----
-(source_file
-    (group
-        (identifier)
-        (group)))
-
-===
-Named Nested Groups
-===
 Group
 {
     Second
     {}
 }
----
-(source_file
-    (group
-        (identifier)
-        (group
-            (identifier))))
-
-===
-List After Group
-===
 AtlasTextureParams
 {
     What = "good"
@@ -271,75 +80,10 @@ AtlasTextureParams
 Statuses [
     "bad"
 ]
----
-(source_file
-    (group
-        (identifier)
-        (assignment
-            (identifier)
-            (value
-                (string))))
-    (list
-        (identifier)
-        (value
-            (string))))
-
-===
-Group After List
-===
-Statuses [
-    "bad"
-]
-AtlasTextureParams
-{
-    What = "good"
-}
----
-(source_file
-    (list
-        (identifier)
-        (value
-            (string)))
-    (group
-        (identifier)
-        (assignment
-            (identifier)
-            (value
-                (string)))))
-
-===
-Inheritance Group
-===
 Object : Other
 {}
----
-(source_file
-    (group
-        (identifier)
-        (extension
-            (internal_extension
-                (identifier)))))
-
-===
-Long Inheritance Group
-===
 Stuff : BASE_SOUNDS/AudioExteriorZoomlessFilter; Test2
 {}
----
-(source_file
-    (group
-        (identifier)
-        (extension
-            (internal_extension
-                (identifier)
-                (identifier)))
-        (extension
-            (internal_extension
-                (identifier)))))
-
-===
-Inheritance Group No Name
-===
 JumpInMediaEffects
 [
     : /BASE_SOUNDS/AudioExteriorZoomlessFilter
@@ -347,165 +91,15 @@ JumpInMediaEffects
         Sound = "common/sounds/ftl_jump_in.wav"
     }
 ]
----
-(source_file
-    (list
-        (identifier)
-        (group
-            (extension
-                (internal_extension
-                    (identifier)
-                    (identifier)))
-            (assignment
-                (identifier)
-                (value
-                    (string))))))
-
-
-===
-Multi Inheritance Group
-===
 Object : Other, Other2 {}
----
-(source_file
-    (group
-        (identifier)
-        (extension
-            (internal_extension
-                (identifier)))
-        (extension
-            (internal_extension
-                (identifier)))))
-
-===
-Inheritance Group
-===
-Object : Other
+Object : /Other/Other2
 []
----
-(source_file
-    (list
-        (identifier)
-        (extension
-            (internal_extension
-                (identifier)))))
-
-===
-Multi Inheritance Group
-===
 Object : Other, Other2 []
----
-(source_file
-    (list
-        (identifier)
-        (extension
-            (internal_extension
-                (identifier)))
-        (extension
-            (internal_extension
-                (identifier)))))
-
-===
-Internal Reference
-===
 Test = &Test/Test2
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (reference
-                (internal_reference
-                    (identifier)
-                    (identifier))))))
-
-===
-Path Reference
-===
 Test = &<fire/fire.rules>
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (reference
-                (path_reference)))))
-
-===
-Path Reference With Path
-===
 Test = &<fire/fire.rules>/Test/Test2
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (reference
-                (path_reference
-                    (identifier)
-                    (identifier))))))
-===
-Binary Expression
-===
 Test = 3 * 1
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (binary_expression
-                (number)
-                (number)))))
-
-
-===
-Binary Expression Parenthesis
-===
 Test = (3 * 1)
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (parenthesized_expression
-                (binary_expression
-                    (number)
-                    (number))))))
-
-===
-Binary Expression Reference
-===
 Test = 3 * (&Test2)
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (binary_expression
-                (number)
-                (parenthesized_expression
-                    (reference
-                        (internal_reference
-                            (identifier))))))))
-
-===
-Function Call
-===
 HEAT_PER_INTERVAL = ceil((&OVERCLOCK/FIRING_HEAT_PER_SECOND) * (&Interval))
 ---
-(source_file
-    (assignment
-        (identifier)
-        (value
-        (function_call
-            (identifier)
-            (binary_expression
-                (parenthesized_expression
-                    (reference
-                        (internal_reference
-                            (identifier)
-                            (identifier))))
-                (parenthesized_expression
-                    (reference
-                        (internal_reference
-                            (identifier)))))))))
