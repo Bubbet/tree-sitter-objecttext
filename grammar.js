@@ -44,13 +44,13 @@ module.exports = grammar({
     _block_value: $ => $._assignment,
 
     extension: $ => seq(choice(
-      /<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/,
-      /\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/
+      /<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
+      /\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
     ), optional(/[;,]/)),
 
     reference: $ => choice(
-      /&<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/,
-      /&\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/
+      /&<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
+      /&\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
     ),
 
     number: $ => /\d*\.?\d+[d]?/,
@@ -70,10 +70,10 @@ module.exports = grammar({
     ),
 
     bare_word: $ => token(prec(-1, /[^\n]+/)),
-    identifier: $ => token(prec(-2, /\.?[a-zA-Z0-9_][a-zA-Z0-9_]*/)),
+    identifier: $ => token(prec(-2, /\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*/)),
     value: $ => choice(
-      alias(token(seq('"', /[^"]*/, '"')), $.string),
-      alias(token(seq('@"', /[^"]*/, '"')), $.virbatim),
+      alias(token(seq('"', /([^"]|(\\"))*/, '"')), $.string),
+      alias(token(seq('@"', /([^"]|(\\"))*/, '"')), $.virbatim),
       alias($._list_as_value, $.list),
       alias($._block_as_value, $.block),
       $.expression
