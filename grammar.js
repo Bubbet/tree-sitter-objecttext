@@ -7,10 +7,18 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
+const PREC = {
+  call: 5,
+  parenthesis: 4,
+  urinary: 3,
+  multiplicative: 2,
+  additive: 1,
+}
+
 module.exports = grammar({
   name: "objecttext",
   extras: $ => [
-    /[\t\r\n \\]/,
+    /[\s]/,
     $.comment,
   ],
   supertypes: $ => [
@@ -18,16 +26,19 @@ module.exports = grammar({
   ],
   rules: {
     // TODO: add the actual grammar rules
-    source_file: $ => $._assignment,
+    source_file: $ => repeat1($._assignment),
 
     // Periods can start identifiers but only when followed by another char two dots in a row at the start is not allowed.
-    identifier: $ => /\.?[A-Za-z0-9_][A-Za-z0-9_\.]*/,
+    identifier: $ => prec(-1, /\.?[A-Za-z0-9_][A-Za-z0-9_\.]*/),
     comment: $ => token(
       choice(seq("//", /.*/), seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
     ),
-    internal_reference: $ => prec.right(seq($.identifier, repeat(seq('/', $.identifier)))),
-    path_reference: $ => prec.right(seq('<', /.+/, '>', repeat(seq('/', $.identifier)))),
-    reference: $ => seq('&', choice(
+    _path: $ => alias(token.immediate(/\/\.?[A-Za-z0-9_][A-Za-z0-9_\.]*/), $.identifier),
+  
+
+    internal_reference: $ => seq(alias(/&\/?\.?[A-Za-z0-9_][A-Za-z0-9_\.]*/, $.identifier), repeat($._path)),
+    path_reference: $ => seq(/&<[^>]+>/, repeat($._path)),
+    reference: $ => prec.right(choice(
       $.internal_reference,
       $.path_reference,
     )),
@@ -37,7 +48,7 @@ module.exports = grammar({
       $.string,
       $.verbatim,
     ),
-    bare_word: $ => token.immediate(prec(-1, /\s*[^\[{"].*/)),
+    bare_word: $ => token.immediate(prec(-2, /\s*[^\[{"].*/)),
     string: $ => choice(
       '""',
       seq('"', repeat(token.immediate(choice(/[^\n"]/, /\\"/))), token.immediate('"')),
@@ -51,21 +62,28 @@ module.exports = grammar({
       $.list,
     ),
 
-    group: $ => seq(field("key", $.identifier), choice(optional('='), seq(':', repeat($.extension))), $._group),
-    list: $ => seq($.identifier, choice(optional('='), seq(':', repeat($.extension))), $._list),
+    group: $ => seq($.identifier, optional(choice('=', seq(':', repeat1($.extension)))), $._group),
+    list: $ => seq($.identifier, optional(choice('=', seq(':', repeat1($.extension)))), $._list),
 
-    _block_value: $ => choice($._assignment,
-      alias(seq(optional(seq(':', repeat($.extension))), $._group), $.group),
-      alias(seq(optional(seq(':', repeat($.extension))), $._list), $.list),
-    ),
 
-    extension: $ => choice(
-      seq($.path_reference, /[;,]?/),
-      seq($.internal_reference, /[;,]?/),
-    ),
+    internal_extension: $ => seq(alias(/\/?\.?[A-Za-z0-9_][A-Za-z0-9_\.]*/, $.identifier), repeat($._path)),
+    path_extension: $ => seq(/<[^>]+>/, repeat($._path)),
+    extension: $ => prec.right(choice(
+      seq($.internal_extension, /[;,]?/),
+      seq($.path_extension, /[;,]?/),
+    )),
 
-    _list: $ => seq('[', repeat($._block_value), ']'),
-    _group: $ => seq('{', repeat($._block_value), '}'),
+    _list: $ => seq('[', repeat(seq(choice(
+      $._assignment,
+      $.value,
+      alias(seq(optional(seq(':', repeat1($.extension))), $._group), $.group),
+      alias(seq(optional(seq(':', repeat1($.extension))), $._list), $.list),
+    ), /[;,]?/)), ']'),
+    _group: $ => seq('{', repeat(seq(choice(
+      $._assignment,
+      alias(seq(optional(seq(':', repeat1($.extension))), $._group), $.group),
+      alias(seq(optional(seq(':', repeat1($.extension))), $._list), $.list),
+    ), /[;,]?/)), '}'),
 
     expression: $ => choice(
       $.number,
@@ -73,27 +91,20 @@ module.exports = grammar({
       $.binary_expression,
       $.urinary_expression,
       $.parenthesized_expression,
-      //$.function_call, // TODO breaks bare_word for some reason
+      $.function_call,
     ),
-    urinary_expression: $ => choice(
-      prec.left(seq('-', $.expression))
-    ),
-    binary_expression: $ => choice(
-      prec.left(seq($.expression, choice('*', '/'), $.expression)),
-      prec.left(seq($.expression, choice('+', '-'), $.expression)),
-    ),
-    parenthesized_expression: $ => seq(
-      '(',
-      $.expression,
-      ')',
-    ),
-    function_call: $ => seq(
-      field("name", $.identifier),
-      '(',
+    urinary_expression: $ => prec(PREC.urinary, seq('-', $.expression)),
+    binary_expression: $ => prec.left(choice(
+      prec(PREC.multiplicative, seq($.expression, choice('*', '/'), $.expression)),
+      prec(PREC.additive, seq($.expression, choice('+', '-'), $.expression)),
+    )),
+    parenthesized_expression: $ => prec(PREC.parenthesis, seq('(', $.expression, ')')),
+    function_call: $ => prec(PREC.call, seq( // TODO make this not include \( in the identifier match
+      field("name", alias(/\.?[A-Za-z0-9_][A-Za-z0-9_\.]*\(/, $.identifier)),
       commaSep($.expression),
       ')',
-    ),
-    number: $ => /-?\d*\.?\d+%?d?/,
+    )),
+    number: $ => token(prec(10, /-?\d*\.?\d+%?d?/)),
   }
 });
 

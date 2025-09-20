@@ -23,7 +23,7 @@ V {}
 ---
 (source_file
     (group
-        key: (identifier)))
+        (identifier)))
 
 
 ===
@@ -94,6 +94,17 @@ Test = some kind of text for a language file
             (bare_word))))
 
 ===
+Bare Chinese Word
+===
+CancelJump = 取消超空间跳跃
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_word))))
+
+===
 Simple String
 ===
 String = "Hi there."
@@ -143,6 +154,53 @@ List = []
 (source_file
     (list
         (identifier)))
+
+===
+List With Reference
+===
+Statuses
+[
+	&<fire/fire.rules>
+]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (reference
+                (path_reference)))))
+
+===
+List With Numbers Comma Seperated
+===
+BaseAngularDamping = [0.4, 0.4]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (number))
+        (value
+            (number))))
+
+===
+List With References
+===
+Statuses
+[
+	&<fire/fire.rules>
+	&<scorched/scorched.rules>
+]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (reference
+                (path_reference)))
+        (value
+            (reference
+                (path_reference)))))
 
 ===
 Nested Lists
@@ -204,6 +262,52 @@ Group
             (identifier))))
 
 ===
+List After Group
+===
+AtlasTextureParams
+{
+    What = "good"
+}
+Statuses [
+    "bad"
+]
+---
+(source_file
+    (group
+        (identifier)
+        (assignment
+            (identifier)
+            (value
+                (string))))
+    (list
+        (identifier)
+        (value
+            (string))))
+
+===
+Group After List
+===
+Statuses [
+    "bad"
+]
+AtlasTextureParams
+{
+    What = "good"
+}
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (string)))
+    (group
+        (identifier)
+        (assignment
+            (identifier)
+            (value
+                (string)))))
+
+===
 Inheritance Group
 ===
 Object : Other
@@ -213,8 +317,50 @@ Object : Other
     (group
         (identifier)
         (extension
-            (internal_reference
+            (internal_extension
                 (identifier)))))
+
+===
+Long Inheritance Group
+===
+Stuff : BASE_SOUNDS/AudioExteriorZoomlessFilter; Test2
+{}
+---
+(source_file
+    (group
+        (identifier)
+        (extension
+            (internal_extension
+                (identifier)
+                (identifier)))
+        (extension
+            (internal_extension
+                (identifier)))))
+
+===
+Inheritance Group No Name
+===
+JumpInMediaEffects
+[
+    : /BASE_SOUNDS/AudioExteriorZoomlessFilter
+    {
+        Sound = "common/sounds/ftl_jump_in.wav"
+    }
+]
+---
+(source_file
+    (list
+        (identifier)
+        (group
+            (extension
+                (internal_extension
+                    (identifier)
+                    (identifier)))
+            (assignment
+                (identifier)
+                (value
+                    (string))))))
+
 
 ===
 Multi Inheritance Group
@@ -225,10 +371,10 @@ Object : Other, Other2 {}
     (group
         (identifier)
         (extension
-            (internal_reference
+            (internal_extension
                 (identifier)))
         (extension
-            (internal_reference
+            (internal_extension
                 (identifier)))))
 
 ===
@@ -241,7 +387,7 @@ Object : Other
     (list
         (identifier)
         (extension
-            (internal_reference
+            (internal_extension
                 (identifier)))))
 
 ===
@@ -253,12 +399,51 @@ Object : Other, Other2 []
     (list
         (identifier)
         (extension
-            (internal_reference
+            (internal_extension
                 (identifier)))
         (extension
-            (internal_reference
+            (internal_extension
                 (identifier)))))
 
+===
+Internal Reference
+===
+Test = &Test/Test2
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (reference
+                (internal_reference
+                    (identifier)
+                    (identifier))))))
+
+===
+Path Reference
+===
+Test = &<fire/fire.rules>
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (reference
+                (path_reference)))))
+
+===
+Path Reference With Path
+===
+Test = &<fire/fire.rules>/Test/Test2
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (reference
+                (path_reference
+                    (identifier)
+                    (identifier))))))
 ===
 Binary Expression
 ===
@@ -306,11 +491,12 @@ Test = 3 * (&Test2)
 ===
 Function Call
 ===
-HEAT_PER_INTERVAL = ceil((&/OVERCLOCK/FIRING_HEAT_PER_SECOND) * (&Interval))
+HEAT_PER_INTERVAL = ceil((&OVERCLOCK/FIRING_HEAT_PER_SECOND) * (&Interval))
 ---
 (source_file
     (assignment
         (identifier)
+        (value
         (function_call
             (identifier)
             (binary_expression
@@ -322,4 +508,4 @@ HEAT_PER_INTERVAL = ceil((&/OVERCLOCK/FIRING_HEAT_PER_SECOND) * (&Interval))
                 (parenthesized_expression
                     (reference
                         (internal_reference
-                            (identifier))))))))
+                            (identifier)))))))))
