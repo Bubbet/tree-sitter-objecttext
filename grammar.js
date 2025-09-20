@@ -26,13 +26,12 @@ module.exports = grammar({
   rules: {
     source_file: $ => repeat1(prec(-1, $._assignment)),
     _assignment: $ => choice(
-      alias($._bare_word_assignment, $.assignment),
+      
       $.assignment,
       $.block,
       $.list,
     ),
 
-    _bare_word_assignment: $ => prec(-1, seq(alias(/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*/, $.identifier), '=', alias(/[^\n]+/, $.bare_word))),
     assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $.value))),
     list: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "[", repeat($._list_value), "]")),
     block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "{", repeat($._block_value), "}")),
@@ -42,17 +41,16 @@ module.exports = grammar({
     _block_value: $ => $._assignment,
 
     extension: $ => seq(choice(
-      /<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
-      /\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
+      /<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/,
+      /\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/
     ), optional(/[;,]/)),
 
     reference: $ => choice(
-      /&<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
-      /&\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
+      /&<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/,
+      /&\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_]*)*/
     ),
 
     number: $ => /\d*\.?\d+[d]?/,
-
     expression: $ => choice(
       $.number,
       $.reference,
@@ -68,7 +66,7 @@ module.exports = grammar({
       prec.left(PREC.add, seq(field('left', $.expression), field('operator', choice("+", "-")), field('right', $.expression))),
     ),
 
-    identifier: $ => /\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*/,
+    identifier: $ => /\.?[a-zA-Z0-9_][a-zA-Z0-9_]*/,
     value: $ => choice(
       alias(token(seq('"', /[^"]*/, '"')), $.string),
       alias(token(seq('@"', /[^"]*/, '"')), $.virbatim),

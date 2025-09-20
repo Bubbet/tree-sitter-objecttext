@@ -27,7 +27,7 @@
     "fields": {
       "key": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
             "type": "identifier",
@@ -37,7 +37,7 @@
       },
       "value": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
             "type": "value",
@@ -45,20 +45,6 @@
           }
         ]
       }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "bare_word",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        }
-      ]
     }
   },
   {
@@ -149,11 +135,6 @@
   },
   {
     "type": "extension",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "identifier",
     "named": true,
     "fields": {}
   },
@@ -315,13 +296,13 @@
     "named": false
   },
   {
-    "type": "bare_word",
-    "named": true
-  },
-  {
     "type": "comment",
     "named": true,
     "extra": true
+  },
+  {
+    "type": "identifier",
+    "named": true
   },
   {
     "type": "number",
