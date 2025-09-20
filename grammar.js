@@ -8,7 +8,8 @@
 // @ts-check
 
 const PREC = {
-  assignment: 4,
+  assignment: 5,
+  func: 4,
   urary: 3,
   mul: 2,
   add: 1,
@@ -40,8 +41,8 @@ module.exports = grammar({
     block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "{", repeat($._block_value), "}")),
     _list_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), "[", repeat($._list_value), "]")),
     _block_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), "{", repeat($._block_value), "}")),
-    _list_value: $ => choice($.value, $._assignment),
-    _block_value: $ => $._assignment,
+    _list_value: $ => seq(choice($._assignment, $.value), optional(',')),
+    _block_value: $ => seq($._assignment, optional(',')),
 
     extension: $ => seq(choice(
       /<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
@@ -53,12 +54,13 @@ module.exports = grammar({
       /&\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
     ),
 
-    number: $ => /\d*\.?\d+[d]?/,
+    number: $ => /\d*\.?\d+[dr%]?/,
     expression: $ => choice(
       $.number,
       $.reference,
       $.unary_expression,
       $.binary_expression,
+      $.function_call,
     ),
     unary_expression: $ => choice(
       prec.left(PREC.urary, seq('(', $.expression, ')')),
@@ -68,9 +70,12 @@ module.exports = grammar({
       prec.left(PREC.mul, seq(field('left', $.expression), field('operator', choice("*", "/")), field('right', $.expression))),
       prec.left(PREC.add, seq(field('left', $.expression), field('operator', choice("+", "-")), field('right', $.expression))),
     ),
+    // TODO this techinically isnt part of ObjectText, it just parses the bare_word as a expression using mxparser
+    // Though, ObjectText does replace references inside that bareword with the real value.
+    function_call: $ => prec.left(PREC.func, seq(/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*\(/, repeat1(seq($.expression, optional(','))), ')')),
 
-    bare_word: $ => token(prec(-1, /[^\n]+/)),
-    identifier: $ => token(prec(-2, /\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*/)),
+    bare_word: $ => token(prec(-2, /[^\n]+/)),
+    identifier: $ => token(prec(-3, /\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*/)),
     value: $ => choice(
       alias(token(seq('"', /([^"]|(\\"))*/, '"')), $.string),
       alias(token(seq('@"', /([^"]|(\\"))*/, '"')), $.virbatim),

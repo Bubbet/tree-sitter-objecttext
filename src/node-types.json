@@ -8,6 +8,10 @@
         "named": true
       },
       {
+        "type": "function_call",
+        "named": true
+      },
+      {
         "type": "number",
         "named": true
       },
@@ -143,6 +147,21 @@
     "fields": {}
   },
   {
+    "type": "function_call",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "list",
     "named": true,
     "fields": {
@@ -273,6 +292,10 @@
   },
   {
     "type": "+",
+    "named": false
+  },
+  {
+    "type": ",",
     "named": false
   },
   {
