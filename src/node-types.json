@@ -40,6 +40,10 @@
         "required": true,
         "types": [
           {
+            "type": "bare_word",
+            "named": true
+          },
+          {
             "type": "value",
             "named": true
           }
@@ -294,6 +298,10 @@
   {
     "type": "]",
     "named": false
+  },
+  {
+    "type": "bare_word",
+    "named": true
   },
   {
     "type": "comment",

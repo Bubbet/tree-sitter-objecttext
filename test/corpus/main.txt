@@ -30,6 +30,7 @@ Another [
     (40 + 20) * 4
     40d
 ]
-
+Test = "not bare"
+BareWord = this shit sucks balls man
 ---
 (source_file)

@@ -53,11 +53,24 @@
             "name": "value",
             "content": {
               "type": "SYMBOL",
-              "name": "value"
+              "name": "_assignment_value"
             }
           }
         ]
       }
+    },
+    "_assignment_value": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "value"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "bare_word"
+        }
+      ]
     },
     "list": {
       "type": "PREC_RIGHT",
@@ -552,9 +565,27 @@
         }
       ]
     },
+    "bare_word": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "PATTERN",
+          "value": "[^\\n]+"
+        }
+      }
+    },
     "identifier": {
-      "type": "PATTERN",
-      "value": "\\.?[a-zA-Z0-9_][a-zA-Z0-9_]*"
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\.?[a-zA-Z0-9_][a-zA-Z0-9_]*"
+        }
+      }
     },
     "value": {
       "type": "CHOICE",

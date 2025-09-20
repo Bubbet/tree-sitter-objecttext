@@ -26,13 +26,16 @@ module.exports = grammar({
   rules: {
     source_file: $ => repeat1(prec(-1, $._assignment)),
     _assignment: $ => choice(
-      
       $.assignment,
       $.block,
       $.list,
     ),
 
-    assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $.value))),
+    assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $._assignment_value))),
+    _assignment_value: $ => choice(
+      $.value,
+      $.bare_word,
+    ),
     list: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "[", repeat($._list_value), "]")),
     block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "{", repeat($._block_value), "}")),
     _list_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), "[", repeat($._list_value), "]")),
@@ -66,7 +69,8 @@ module.exports = grammar({
       prec.left(PREC.add, seq(field('left', $.expression), field('operator', choice("+", "-")), field('right', $.expression))),
     ),
 
-    identifier: $ => /\.?[a-zA-Z0-9_][a-zA-Z0-9_]*/,
+    bare_word: $ => token(prec(-1, /[^\n]+/)),
+    identifier: $ => token(prec(-2, /\.?[a-zA-Z0-9_][a-zA-Z0-9_]*/)),
     value: $ => choice(
       alias(token(seq('"', /[^"]*/, '"')), $.string),
       alias(token(seq('@"', /[^"]*/, '"')), $.virbatim),
