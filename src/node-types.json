@@ -44,7 +44,7 @@
         "required": true,
         "types": [
           {
-            "type": "bare_word",
+            "type": "bare_string",
             "named": true
           },
           {
@@ -142,6 +142,11 @@
     }
   },
   {
+    "type": "bool",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "extension",
     "named": true,
     "fields": {}
@@ -156,6 +161,10 @@
       "types": [
         {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "identifier",
           "named": true
         }
       ]
@@ -260,7 +269,15 @@
           "named": true
         },
         {
+          "type": "bool",
+          "named": true
+        },
+        {
           "type": "expression",
+          "named": true
+        },
+        {
+          "type": "identifier",
           "named": true
         },
         {
@@ -311,6 +328,10 @@
     "named": false
   },
   {
+    "type": ";",
+    "named": false
+  },
+  {
     "type": "=",
     "named": false
   },
@@ -323,13 +344,17 @@
     "named": false
   },
   {
-    "type": "bare_word",
+    "type": "bare_string",
     "named": true
   },
   {
     "type": "comment",
     "named": true,
     "extra": true
+  },
+  {
+    "type": "false",
+    "named": false
   },
   {
     "type": "identifier",
@@ -342,6 +367,10 @@
   {
     "type": "string",
     "named": true
+  },
+  {
+    "type": "true",
+    "named": false
   },
   {
     "type": "virbatim",

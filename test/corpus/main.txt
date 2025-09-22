@@ -1,36 +1,276 @@
 ===
-Main
+String
 ===
 Test = "string"
-Test2 = @"test"
-test = {}
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (string))))
+
+===
+Virbatim
+===
+Test = @"string"
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (virbatim))))
+
+===
+Block
+===
+Test = {}
+---
+(source_file
+    (block
+        (identifier)))
+
+===
+List
+===
+Test = []
+---
+(source_file
+    (list
+        (identifier)))
+
+===
+Block Extension
+===
 Test : A {}
-Test : A, B []
-Test [
-    B
-    {}
-]
-Test [
-    {}
-]
-Test [
-    : Test
-    {}
-]
-Test : <file.rules>/Path {}
-Something [[]]
-Another [
-    "thing"
-    &<path.rules>/Thing
-    &<another.rules>
-    &thing
-    0.2
-    0.3 + 0.4
-    (&yes) + 0.4
-    (40 + 20) * 4
-    40d
-]
-Test = "not bare"
-BareWord = this shit sucks balls man
+---
+(source_file
+    (block
+        (identifier)
+        (extension)))
+
+===
+List Extension
+===
+Test : A []
+---
+(source_file
+    (list
+        (identifier)
+        (extension)))
+
+===
+Block Multi Extension
+===
+Test : A, B; C {}
+---
+(source_file
+    (block
+        (identifier)
+        (extension)
+        (extension)
+        (extension)))
+
+
+===
+List Multi Extension
+===
+Test : A, B; C []
+---
+(source_file
+    (list
+        (identifier)
+        (extension)
+        (extension)
+        (extension)))
+
+===
+Nesting
+===
+Block {
+    List [
+        []
+        {}
+        : A, <file.rules>/Path
+        []
+    ]
+}
+---
+(source_file
+    (block
+        (identifier)
+        (list
+            (identifier)
+            (value
+                (list))
+            (value
+                (block))
+            (value
+                (list
+                    (extension)
+                    (extension))))))
+
+===
+Expressions
+===
+Sum = -0.1 + (&B) * 50d
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (binary_expression
+                (unary_expression
+                    (number))
+                (binary_expression
+                    (unary_expression
+                        (reference))
+                    (number))))))
+
+===
+Function Call
+===
+Test = ceil(0.5r, 50%)
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (function_call
+                (identifier)
+                (number)
+                (number)))))
+
+===
+Bare String
+===
+BareString = this shit sucks balls man
+---
+(source_file
+    (assignment
+        (identifier)
+        (bare_string)))
+
+===
+Weird Reference
+===
+WeirdAssReference = &../^/0/Test
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (reference))))
+
+===
+Identifier As Value
+===
+DrawProhibitedZoneCategories = [default]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (identifier))))
+
+===
+Weird Extensions
+===
+Part : <base_part.rules>/Part
+{
+	ReceivableBuffs : ^/0/ReceivableBuffs [ Overclock ]
+	BASE_THERMAL_PORT
+	{
+		RouteSource = &../HEAT_NETWORK_INPUT
+	}
+	
+	Components : ^/0/Components
+	{}
+}
+---
+(source_file
+    (block
+        (identifier)
+        (extension)
+        (list
+            (identifier)
+            (extension)
+            (value
+                (identifier)))
+        (block
+            (identifier)
+            (assignment
+                (identifier)
+                (value
+                    (reference))))
+        (block
+            (identifier)
+            (extension))))
+
+===
+Identifier As Value In Block
+===
+OverheatEffects
+{
+	Type = TriggeredEffects
+}
+---
+(source_file
+    (block
+        (identifier)
+        (assignment
+            (identifier)
+            (value
+                (identifier)))))
+
+===
+Block Single Line ; Seperator
+===
+IsOperational { Type = StaticToggle; ToggleOn = true; }
+---
+(source_file
+  (block
+    (identifier)
+    (assignment
+      (identifier)
+      (value
+        (identifier)))
+    (assignment
+      (identifier)
+      (value
+        (bool)))))
+
+
+===
+Main
+===
+OverheatEffects
+		{
+			Type = TriggeredEffects
+			Trigger = OverflowHeatStorage
+			FactorHitEffectsWith = OverflowHeatStorage
+			HitEffects
+			[
+				{
+					Type = StatusApplication
+					StatusType = cosmoteer.heat
+					StatusValue
+					{
+						BaseValue = 1
+						Modifiers
+						[
+							{
+								Type = EffectScale
+								ModificationMode = Multiply
+							}
+						]
+					}
+					ApplyToAllHitPartTiles = true
+					DivideValueByPartArea = true
+					Filter {
+						Self = true
+					}
+				}
+			]
+		}
 ---
 (source_file)

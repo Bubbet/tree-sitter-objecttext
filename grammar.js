@@ -10,10 +10,15 @@
 const PREC = {
   assignment: 5,
   func: 4,
-  urary: 3,
+  unary: 3,
   mul: 2,
   add: 1,
 }
+const IDENTIFIER = "\\.?[a-zA-Z0-9_][a-zA-Z0-9_\\.]*"
+const PATH_FILE = "<[^>]+>(\/" + IDENTIFIER + "\)*" //"<[^>]+>(\/" + IDENTIFIER + ")*"
+const LEADING_GROUP = "\(\([.~]\/\)|\/\)?"
+const INTERNAL_IDENTIFIER = "\(" + IDENTIFIER + "|\\^|\(\\.\\.\))"
+const PATH_INTERNAL = LEADING_GROUP + INTERNAL_IDENTIFIER + "\(\\/" + INTERNAL_IDENTIFIER + "\)*" //"(~|\.|(\.\.))?\/?(" + IDENTIFIER + ")|\^(\/(" + IDENTIFIER + ")|\^)*"
 
 module.exports = grammar({
   name: "objecttext",
@@ -23,6 +28,14 @@ module.exports = grammar({
   ],
   supertypes: $ => [
     $.expression,
+  ],
+  conflicts: $ => [
+    [$.value, $._block_as_value, $._list_as_value],
+    [$.value, $._block_as_value],
+    [$.value, $._list_as_value],
+  ],
+  externals: $ => [
+    $.bare_string,
   ],
   rules: {
     source_file: $ => repeat1(prec(-1, $._assignment)),
@@ -35,23 +48,26 @@ module.exports = grammar({
     assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $._assignment_value))),
     _assignment_value: $ => choice(
       $.value,
-      $.bare_word,
+      $.bare_string,
     ),
-    list: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "[", repeat($._list_value), "]")),
-    block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), "{", repeat($._block_value), "}")),
-    _list_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), "[", repeat($._list_value), "]")),
-    _block_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), "{", repeat($._block_value), "}")),
-    _list_value: $ => seq(choice($._assignment, $.value), optional(',')),
-    _block_value: $ => seq($._assignment, optional(',')),
+
+    list: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), $._list)),
+    block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), $._block)),
+    _list_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), $._list)),
+    _block_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), $._block)),
+    _list: $ => seq("[", repeat($._list_value), "]"),
+    _block: $ => seq("{", repeat($._block_value), "}"),
+    _list_value: $ => seq(choice($._assignment, $.value), optional(choice(',', ';'))),
+    _block_value: $ => seq($._assignment, optional(choice(',', ';'))),
 
     extension: $ => seq(choice(
-      /<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
-      /\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
+      new RegExp(PATH_FILE),
+      new RegExp(PATH_INTERNAL),
     ), optional(/[;,]/)),
 
     reference: $ => choice(
-      /&<[^>]+>(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/,
-      /&\/?\.?[a-zA-Z0-9_][a-zA-Z0-9_]*(\/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*)*/
+      new RegExp("&" + PATH_FILE),
+      new RegExp("&" + PATH_INTERNAL),
     ),
 
     number: $ => /\d*\.?\d+[dr%]?/,
@@ -63,8 +79,8 @@ module.exports = grammar({
       $.function_call,
     ),
     unary_expression: $ => choice(
-      prec.left(PREC.urary, seq('(', $.expression, ')')),
-      prec.left(PREC.urary, seq('-', $.expression)),
+      prec.left(PREC.unary, seq('(', $.expression, ')')),
+      prec.left(PREC.unary, seq('-', $.expression)),
     ),
     binary_expression: $ => choice(
       prec.left(PREC.mul, seq(field('left', $.expression), field('operator', choice("*", "/")), field('right', $.expression))),
@@ -72,16 +88,19 @@ module.exports = grammar({
     ),
     // TODO this techinically isnt part of ObjectText, it just parses the bare_word as a expression using mxparser
     // Though, ObjectText does replace references inside that bareword with the real value.
-    function_call: $ => prec.left(PREC.func, seq(/\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*\(/, repeat1(seq($.expression, optional(','))), ')')),
+    function_call: $ => prec.left(PREC.func, seq($.identifier, token.immediate('('), repeat1(seq($.expression, optional(','))), ')')),
 
-    bare_word: $ => token(prec(-2, /[^\n]+/)),
-    identifier: $ => token(prec(-3, /\.?[a-zA-Z0-9_][a-zA-Z0-9_\.]*/)),
+    bool: $ => choice('true', 'false'),
+    //bare_string: $ => token(prec(-2, /[^\n]+/)),
+    identifier: $ => token(prec(-2, new RegExp(IDENTIFIER))),
     value: $ => choice(
       alias(token(seq('"', /([^"]|(\\"))*/, '"')), $.string),
       alias(token(seq('@"', /([^"]|(\\"))*/, '"')), $.virbatim),
       alias($._list_as_value, $.list),
       alias($._block_as_value, $.block),
-      $.expression
+      $.expression,
+      $.identifier,
+      $.bool,
     ),
     comment: (_) => token(choice(
       seq("//", /[^\n]*/),
