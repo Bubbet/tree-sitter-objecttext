@@ -29,14 +29,14 @@ module.exports = grammar({
   supertypes: $ => [
     $.expression,
   ],
+  externals: $ => [
+    $.bare_string,
+  ],
   conflicts: $ => [
     [$.value, $._block_as_value, $._list_as_value],
     [$.value, $._block_as_value],
     [$.value, $._list_as_value],
     [$.value, $._list_value],
-  ],
-  externals: $ => [
-    $.bare_string,
   ],
   rules: {
     source_file: $ => repeat1(prec(-1, $._assignment)),
