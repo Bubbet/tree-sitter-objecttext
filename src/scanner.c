@@ -19,19 +19,39 @@ void tree_sitter_objecttext_external_scanner_deserialize(void *p, const char *b,
   (void)p; (void)b; (void)n;
 }
 
-static bool is_identifier_char(int32_t c) {
-  return iswalnum(c) || c == '_' || c == '.';
+static bool is_identifier_char_ascii(int32_t c) {
+  return (c >= 'a' && c <= 'z') ||
+         (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') ||
+         c == '_' || c == '.';
 }
 
 static bool is_number_char(int32_t c) {
-  return iswdigit(c) || c == '.';
+  return (c >= '0' && c <= '9') || c == '.';
 }
 
-static bool contains_operator(const char *buf) {
-    for (const char *p = buf; *p; p++) {
-        char c = *p;
+static bool isspace(int32_t c) {
+  return c == ' ' || c == '\t' || c == ';' || c ==',';
+}
+
+static bool contains_operator(const int32_t *buf) {
+    for (const int32_t *p = buf; *p; p++) {
+        int32_t c = *p;
+
         if (c == '+' || c == '-' || c == '*' || c == '/') {
-            return true;
+            // Check the character before the operator
+            const int32_t *left = p - 1;
+            while (left >= buf && isspace(*left)) left--;
+            bool valid_left = (left >= buf && (is_number_char(*left) || *left == ')' || *left == ']'));
+
+            // Check the character after the operator
+            const int32_t *right = p + 1;
+            while (*right && isspace(*right)) right++;
+            bool valid_right = (*right && (is_number_char(*right) || *right == '(' || *right == '['));
+
+            if (valid_left && valid_right) {
+                return true;
+            }
         }
     }
     return false;
@@ -42,21 +62,54 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
   if (!valid_symbols[BARE_STRING]) return false;
 
   // Skip leading whitespace
-  while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+  while (isspace(lexer->lookahead)) {
     lexer->advance(lexer, true);
   }
 
   // Record buffer
-  char buf[1024]; // adjust if needed
+  int32_t buf[1024];
   unsigned len = 0;
 
-  // Read until newline or EOF
-  while (lexer->lookahead != 0 && lexer->lookahead != '\n' && lexer->lookahead != '\r' && lexer->lookahead != ';' && lexer->lookahead != ',') {
-    if (len < sizeof(buf) - 1) {
-      buf[len++] = (char)lexer->lookahead;
+  // Read until newline or delimiters
+  bool inside_string = false;
+  bool inside_verbatim = false;
+
+  if (lexer->lookahead == '"') {
+    inside_string = true;
+  } else if (lexer->lookahead == '@') {
+    // Check for @"..." verbatim
+    lexer->advance(lexer, false);
+    if (lexer->lookahead == '"') {
+      inside_verbatim = true;
+    } else {
+      lexer->advance(lexer, true); // rollback, wasn't verbatim
     }
+  }
+
+  while (lexer->lookahead != 0) {
+    int32_t c = lexer->lookahead;
+
+    // Stop if unquoted and hit newline, ; or ,
+    if (!inside_string && !inside_verbatim && (c == '\n' || c == '\r' || c == ';' || c == ',')) {
+      break;
+    }
+
+    if (len < sizeof(buf)/sizeof(buf[0]) - 1) {
+      buf[len++] = c;
+    }
+
+    // Track string boundaries
+    if (inside_string && c == '"' && (len == 1 || buf[len-2] != '\\')) {
+      inside_string = false; // close string
+    }
+
+    if (inside_verbatim && c == '"') {
+      inside_verbatim = false; // close verbatim
+    }
+
     lexer->advance(lexer, false);
   }
+
   buf[len] = '\0';
 
   if (len == 0) return false;
@@ -80,13 +133,13 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
     unsigned i = 0;
 
     // Leading identifier
-    if (iswalnum(buf[i]) || buf[i] == '_' || buf[i] == '.') {
-        while (i < len && is_identifier_char(buf[i])) {
+    if (iswalnum((wint_t)buf[i]) || buf[i] == '_' || buf[i] == '.') {
+      while (i < len && is_identifier_char_ascii(buf[i])) {
         i++;
-        }
-        if (i < len && buf[i] == '(') {
+      }
+      if (i < len && buf[i] == '(') {
         valid_func = true;
-        }
+      }
     }
     if (valid_func) return false;
   }
@@ -95,7 +148,7 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
   // Pure identifier
   bool all_ident = true;
   for (unsigned i = 0; i < len; i++) {
-    if (!is_identifier_char(buf[i])) { all_ident = false; break; }
+    if (!is_identifier_char_ascii(buf[i])) { all_ident = false; break; }
   }
   if (all_ident) return false;
 

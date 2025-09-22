@@ -44,10 +44,6 @@
         "required": true,
         "types": [
           {
-            "type": "bare_string",
-            "named": true
-          },
-          {
             "type": "value",
             "named": true
           }
@@ -289,6 +285,10 @@
           "named": true
         },
         {
+          "type": "value",
+          "named": true
+        },
+        {
           "type": "virbatim",
           "named": true
         }
@@ -342,10 +342,6 @@
   {
     "type": "]",
     "named": false
-  },
-  {
-    "type": "bare_string",
-    "named": true
   },
   {
     "type": "comment",

@@ -33,6 +33,7 @@ module.exports = grammar({
     [$.value, $._block_as_value, $._list_as_value],
     [$.value, $._block_as_value],
     [$.value, $._list_as_value],
+    [$.value, $._list_value],
   ],
   externals: $ => [
     $.bare_string,
@@ -45,11 +46,7 @@ module.exports = grammar({
       $.list,
     ),
 
-    assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $._assignment_value))),
-    _assignment_value: $ => choice(
-      $.value,
-      $.bare_string,
-    ),
+    assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $.value))),
 
     list: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), $._list)),
     block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), $._block)),
@@ -70,7 +67,27 @@ module.exports = grammar({
       new RegExp("&" + PATH_INTERNAL),
     ),
 
-    number: $ => /\d*\.?\d+[dr%]?/,
+    number: _ => {
+      const decimalDigits = /\d(_?\d)*/;
+      const signedInteger = seq(optional(choice('-', '+')), decimalDigits);
+      const exponentPart = seq(choice('e', 'E'), signedInteger);
+      const decimalIntegerLiteral = choice(
+        '0',
+        seq(optional('0'), /[1-9]/, optional(seq(optional('_'), decimalDigits))),
+      );
+
+      const decimalLiteral = choice(
+        seq(decimalIntegerLiteral, '.', optional(decimalDigits), optional(exponentPart)),
+        seq('.', decimalDigits, optional(exponentPart)),
+        seq(decimalIntegerLiteral, exponentPart),
+        decimalDigits,
+      );
+
+      return token(choice(
+        decimalLiteral,
+        /\d*\.?\d+[dr%]?/,
+      ));
+    },
     expression: $ => choice(
       $.number,
       $.reference,
@@ -101,6 +118,7 @@ module.exports = grammar({
       $.expression,
       $.identifier,
       $.bool,
+      $.value,
     ),
     comment: (_) => token(choice(
       seq("//", /[^\n]*/),

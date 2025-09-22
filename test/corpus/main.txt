@@ -148,7 +148,8 @@ BareString = this shit sucks balls man
 (source_file
     (assignment
         (identifier)
-        (bare_string)))
+        (value
+            (bare_string))))
 
 ===
 Weird Reference
@@ -239,6 +240,70 @@ IsOperational { Type = StaticToggle; ToggleOn = true; }
       (value
         (bool)))))
 
+===
+Chinese String With FormatArgs
+===
+UploadingFmt = "正在上传至创意工坊……{0}%"
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (string))))
+
+===
+Chinese Bare String With Trailing :
+===
+Visibility = 可见：
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+More Chinese Tests
+===
+FillIcon = 填充
+Line = 直线
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string)))
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Weird String Formatting
+===
+HeatCapacityFmt = "{0:#,0.#;;0} <gray>兆焦</gray>"
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (string))))
+
+===
+Weird Quote Bare String
+===
+FameTitles
+[
+	
+	“不为人知”
+]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (bare_string))))
+
 
 ===
 Main
@@ -273,4 +338,3 @@ OverheatEffects
 			]
 		}
 ---
-(source_file)
