@@ -261,6 +261,10 @@
       "required": true,
       "types": [
         {
+          "type": "bare_string",
+          "named": true
+        },
+        {
           "type": "block",
           "named": true
         },
@@ -282,10 +286,6 @@
         },
         {
           "type": "string",
-          "named": true
-        },
-        {
-          "type": "value",
           "named": true
         },
         {
@@ -342,6 +342,10 @@
   {
     "type": "]",
     "named": false
+  },
+  {
+    "type": "bare_string",
+    "named": true
   },
   {
     "type": "comment",

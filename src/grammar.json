@@ -1094,8 +1094,12 @@
           "name": "bool"
         },
         {
-          "type": "SYMBOL",
-          "name": "value"
+          "type": "PREC",
+          "value": 10,
+          "content": {
+            "type": "SYMBOL",
+            "name": "bare_string"
+          }
         }
       ]
     },
@@ -1161,10 +1165,6 @@
     [
       "value",
       "_list_as_value"
-    ],
-    [
-      "value",
-      "_list_value"
     ]
   ],
   "precedences": [],
@@ -1172,6 +1172,10 @@
     {
       "type": "SYMBOL",
       "name": "bare_string"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "error_sentinel"
     }
   ],
   "inline": [],

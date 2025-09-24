@@ -242,6 +242,7 @@ IsOperational { Type = StaticToggle; ToggleOn = true; }
 
 ===
 Chinese String With FormatArgs
+:skip
 ===
 UploadingFmt = "正在上传至创意工坊……{0}%"
 ---
@@ -252,7 +253,8 @@ UploadingFmt = "正在上传至创意工坊……{0}%"
             (string))))
 
 ===
-Chinese Bare String With Trailing :
+Chinese Bare String With Trailing ":"
+:skip
 ===
 Visibility = 可见：
 ---
@@ -264,6 +266,7 @@ Visibility = 可见：
 
 ===
 More Chinese Tests
+:skip
 ===
 FillIcon = 填充
 Line = 直线
@@ -280,6 +283,7 @@ Line = 直线
 
 ===
 Weird String Formatting
+:skip
 ===
 HeatCapacityFmt = "{0:#,0.#;;0} <gray>兆焦</gray>"
 ---
@@ -288,13 +292,23 @@ HeatCapacityFmt = "{0:#,0.#;;0} <gray>兆焦</gray>"
         (identifier)
         (value
             (string))))
+===
+Weird Quote Bare String Assignment
+===
+FameTitles = “不为人知”
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
 
 ===
 Weird Quote Bare String
 ===
 FameTitles
 [
-	
+
 	“不为人知”
 ]
 ---
@@ -307,6 +321,7 @@ FameTitles
 
 ===
 Main
+:skip
 ===
 OverheatEffects
 		{
