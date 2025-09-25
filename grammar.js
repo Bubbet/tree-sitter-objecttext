@@ -8,7 +8,6 @@
 // @ts-check
 
 const PREC = {
-    assignment: 5,
     func: 4,
     unary: 3,
     mul: 2,
@@ -29,37 +28,41 @@ module.exports = grammar({
     supertypes: $ => [
         $.expression,
     ],
-    conflicts: $ => [
-        [$.value, $._block_as_value, $._list_as_value],
-        [$.value, $._block_as_value],
-        [$.value, $._list_as_value],
-    ],
     externals: $ => [
         $.bare_string, $.error_sentinel
     ],
     rules: {
-        source_file: $ => repeat1(prec(-1, $._assignment)),
+        source_file: $ => repeat1($._assignment),
         _assignment: $ => choice(
             $.assignment,
             $.block,
             $.list,
         ),
+        assignment: $ => seq(field("key", $.identifier), "=", field("value", $.value)),
 
-        assignment: $ => prec(PREC.assignment, seq(field("key", $.identifier), "=", field("value", $.value))),
-
-        list: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), $._list)),
-        block: $ => prec.right(PREC.assignment, seq(field("key", $.identifier), optional(choice('=', seq(':', repeat1($.extension)))), $._block)),
-        _list_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), $._list)),
-        _block_as_value: $ => prec.right(seq(optional(field("key", $.identifier)), optional(choice('=', seq(':', repeat1($.extension)))), $._block)),
-        _list: $ => seq("[", repeat($._list_value), "]"),
-        _block: $ => seq("{", repeat($._block_value), "}"),
-        _list_value: $ => seq(choice($._assignment, $.value), optional(choice(',', ';'))),
-        _block_value: $ => seq($._assignment, optional(choice(',', ';'))),
+        _equal_or_extension: $ => prec(1, choice("=", $._extension_chain)),
+        _extension_chain: $ => seq(":", repeat1($.extension)),
+        _value_extension_chain: $ => prec(1, choice(
+          seq($.identifier, '='),
+          seq($.identifier, optional($._extension_chain)),
+          $._extension_chain,
+        )),
+        block: $ => seq(field("key", $.identifier), optional($._equal_or_extension), $._block_group),
+        list: $ => seq(field("key", $.identifier), optional($._equal_or_extension), $._list_group),
+        _block_as_value_def: $ => seq(optional($._value_extension_chain), $._block_group),
+        _list_as_value_def: $ => seq(optional($._value_extension_chain), $._list_group),
+        _block_as_value: $ => alias($._block_as_value_def, $.block),
+        _list_as_value: $ => alias($._list_as_value_def, $.list),
+        _block_group: $ => seq("{", repeat($._block_value), "}"),
+        _list_group: $ => seq("[", repeat($._list_value), "]"),
+        _block_value: $ => seq($._assignment, optional($._split)),
+        _list_value: $ => seq($.value, optional($._split)),
+        _split: $ => choice(",", ";"),
 
         extension: $ => seq(choice(
-            new RegExp(PATH_FILE),
-            new RegExp(PATH_INTERNAL),
-        ), optional(/[;,]/)),
+            new RegExp("&?" + PATH_FILE),
+            new RegExp("&?" + PATH_INTERNAL),
+        ), optional($._split)),
 
         reference: $ => choice(
             new RegExp("&" + PATH_FILE),
@@ -92,32 +95,41 @@ module.exports = grammar({
             $.reference,
             $.unary_expression,
             $.binary_expression,
-            $.function_call,
         ),
         unary_expression: $ => choice(
             prec.left(PREC.unary, seq('(', $.expression, ')')),
             prec.left(PREC.unary, seq('-', $.expression)),
         ),
+        mul: _ => '*',
+        div: _ => '/',
+        add: _ => '+',
+        sub: _ => '-',
         binary_expression: $ => choice(
-            prec.left(PREC.mul, seq(field('left', $.expression), field('operator', choice("*", "/")), field('right', $.expression))),
-            prec.left(PREC.add, seq(field('left', $.expression), field('operator', choice("+", "-")), field('right', $.expression))),
+            prec.left(PREC.mul, seq(field('left', $.expression), field('operator', choice($.mul, $.div)), field('right', $.expression))),
+            prec.left(PREC.add, seq(field('left', $.expression), field('operator', choice($.add, $.sub)), field('right', $.expression))),
         ),
         // TODO this techinically isnt part of ObjectText, it just parses the bare_word as a expression using mxparser
         // Though, ObjectText does replace references inside that bareword with the real value.
         function_call: $ => prec.left(PREC.func, seq($.identifier, token.immediate('('), repeat1(seq($.expression, optional(','))), ')')),
 
-        bool: $ => choice('true', 'false'),
+        true: _ => 'true',
+        false: _ => 'false',
+        bool: $ => choice($.true, $.false),
         //bare_string: $ => token(prec(-2, /[^\n]+/)),
-        identifier: $ => token(prec(-2, new RegExp(IDENTIFIER))),
+        //bare_string: $ => /[^\n(){}\[\]:;"&]*\n/,
+        identifier: $ => new RegExp(IDENTIFIER),
+        string: $ => seq('"', /([^"]|(\\")|("\\\s*"))*/, '"'),
+        verbatim: $ => seq('@"', /([^"]|(\\")|("\\\s*"))*/, '"'),
         value: $ => choice(
-            alias(token(seq('"', /([^"]|(\\"))*/, '"')), $.string),
-            alias(token(seq('@"', /([^"]|(\\"))*/, '"')), $.virbatim),
-            alias($._list_as_value, $.list),
-            alias($._block_as_value, $.block),
+            $.string,
+            $.verbatim,
+            $._block_as_value,
+            $._list_as_value,
             $.expression,
+            $.function_call,
             $.identifier,
             $.bool,
-            prec(10, $.bare_string),
+            $.bare_string,
         ),
         comment: (_) => token(choice(
             seq("//", /[^\n]*/),

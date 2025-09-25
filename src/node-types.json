@@ -8,10 +8,6 @@
         "named": true
       },
       {
-        "type": "function_call",
-        "named": true
-      },
-      {
         "type": "number",
         "named": true
       },
@@ -70,20 +66,20 @@
         "required": true,
         "types": [
           {
-            "type": "*",
-            "named": false
+            "type": "add",
+            "named": true
           },
           {
-            "type": "+",
-            "named": false
+            "type": "div",
+            "named": true
           },
           {
-            "type": "-",
-            "named": false
+            "type": "mul",
+            "named": true
           },
           {
-            "type": "/",
-            "named": false
+            "type": "sub",
+            "named": true
           }
         ]
       },
@@ -131,6 +127,10 @@
           "named": true
         },
         {
+          "type": "identifier",
+          "named": true
+        },
+        {
           "type": "list",
           "named": true
         }
@@ -140,7 +140,21 @@
   {
     "type": "bool",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "false",
+          "named": true
+        },
+        {
+          "type": "true",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "extension",
@@ -186,19 +200,11 @@
       "required": false,
       "types": [
         {
-          "type": "assignment",
-          "named": true
-        },
-        {
-          "type": "block",
-          "named": true
-        },
-        {
           "type": "extension",
           "named": true
         },
         {
-          "type": "list",
+          "type": "identifier",
           "named": true
         },
         {
@@ -236,6 +242,16 @@
         }
       ]
     }
+  },
+  {
+    "type": "string",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "sub",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "unary_expression",
@@ -277,6 +293,10 @@
           "named": true
         },
         {
+          "type": "function_call",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -289,11 +309,20 @@
           "named": true
         },
         {
-          "type": "virbatim",
+          "type": "verbatim",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "verbatim",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "\"",
+    "named": false
   },
   {
     "type": "(",
@@ -304,23 +333,11 @@
     "named": false
   },
   {
-    "type": "*",
-    "named": false
-  },
-  {
-    "type": "+",
-    "named": false
-  },
-  {
     "type": ",",
     "named": false
   },
   {
     "type": "-",
-    "named": false
-  },
-  {
-    "type": "/",
     "named": false
   },
   {
@@ -336,12 +353,20 @@
     "named": false
   },
   {
+    "type": "@\"",
+    "named": false
+  },
+  {
     "type": "[",
     "named": false
   },
   {
     "type": "]",
     "named": false
+  },
+  {
+    "type": "add",
+    "named": true
   },
   {
     "type": "bare_string",
@@ -353,11 +378,19 @@
     "extra": true
   },
   {
+    "type": "div",
+    "named": true
+  },
+  {
     "type": "false",
-    "named": false
+    "named": true
   },
   {
     "type": "identifier",
+    "named": true
+  },
+  {
+    "type": "mul",
     "named": true
   },
   {
@@ -365,15 +398,7 @@
     "named": true
   },
   {
-    "type": "string",
-    "named": true
-  },
-  {
     "type": "true",
-    "named": false
-  },
-  {
-    "type": "virbatim",
     "named": true
   },
   {
