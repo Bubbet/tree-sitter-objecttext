@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define SCANNER_LOGGING
+//#define SCANNER_LOGGING
 #if defined(__EMSCRIPTEN__) || defined(__wasm__) || !defined(SCANNER_LOGGING)
 // WASM build: define as no-op
 #define LOG(...)
@@ -40,6 +40,7 @@ enum {
     VerbatimQuote, // 12
     BareString, // 13
     Error, // 14
+    WhitespaceAfterIdentifier, // 15
 };
 
 
@@ -58,6 +59,14 @@ void tree_sitter_objecttext_external_scanner_deserialize(void *payload, const ch
     (void) length;
 }
 
+static bool is_number_char(const int32_t c) {
+    return c >= '0' && c <= '9';
+}
+
+static bool is_operator_char(const int32_t c) {
+    return c == '*' || c == '/' || c == '+' || c == '-';
+}
+
 static bool is_identifier_char(const int32_t c) {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
@@ -66,7 +75,7 @@ static bool is_identifier_char(const int32_t c) {
 }
 
 static bool is_terminator_char(const int32_t c) {
-    return c == '[' || c == ']' || c == '{' || c == '}' || c == ':' || c == '&' || c == '"' || c == ';' || c == ',';
+    return c == '\n' || c == '[' || c == ']' || c == '{' || c == '}' || c == ':' || c == '&' || c == ';' || c == ',';
 }
 
 static bool is_whitespace_char(const int32_t c) {
@@ -91,8 +100,6 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
 
     int lexer_state = Start;
     bool has_stuff = false;
-    bool identifier_found = false;
-    bool probably_bare_string = false;
     while (!lexer->eof(lexer)) {
         const int32_t lookahead = lexer->lookahead;
 
@@ -112,10 +119,14 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     break;
                 }
                 if (is_terminator_char(lookahead)) {
-                    if (probably_bare_string) {
-                        lexer_state = BareString;
-                        goto break_loop;
-                    }
+                    // break;
+                    goto break_loop;
+                }
+                if (lookahead == '-' || lookahead == '(') {
+                    lexer_state = Error;
+                    goto break_loop;
+                }
+                if (is_number_char(lookahead) || is_operator_char(lookahead)) {
                     lexer_state = Error;
                     goto break_loop;
                 }
@@ -132,9 +143,8 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     break;
                 }
                 if (lookahead >= 0) { // else
-                    probably_bare_string = true;
-                    lexer_state = Start;
-                    break; // TODO maybe break out of loop
+                    lexer_state = BareString;
+                    break;
                 }
                 break;
             case MaybeIdentifierStartsPeriod:
@@ -151,20 +161,40 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 if (is_identifier_char(lookahead)) {
                     break;
                 }
+                if (lookahead == '(') {
+                    lexer_state = Error;
+                    goto break_loop;
+                }
                 if (is_terminator_char(lookahead))
                     goto break_loop;
-                identifier_found = true;
+                if (is_whitespace(lookahead)) {
+                    lexer_state = WhitespaceAfterIdentifier;
+                    break;
+                }
                 goto start;
+            case WhitespaceAfterIdentifier:
+                if (is_whitespace(lookahead)) {
+                    break;
+                }
+                if (is_terminator_char(lookahead)) {
+                    goto break_loop;
+                }
+                if (lookahead >= 0) {
+                    lexer_state = BareString;
+                    break;
+                }
+                lexer_state = Error;
+                break;
             case Whitespace:
                 if (is_whitespace(lookahead)) {
-                    if (lookahead == '\n' && probably_bare_string) {
-                        lexer_state = BareString;
-                        goto break_loop;
-                    }
                     break;
                 }
                 if (lookahead == 47) { // /
                     lexer_state = MaybeCommentStart;
+                }
+                if (is_terminator_char(lookahead)) {
+                    lexer_state = Error;
+                    goto break_loop;
                 }
                 goto start;
             case Quote:
@@ -204,7 +234,9 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 lexer_state = Error;
                 break; // Was GOTO Error
             case BareString:
-                goto break_loop;
+                if (is_terminator_char(lookahead))
+                    goto break_loop;
+                break;
             default:
                 lexer_state = Error;
                 goto break_loop;
@@ -220,7 +252,7 @@ break_loop:
         return false;
     }
 
-    if (lexer_state != BareString && !identifier_found && !probably_bare_string) {
+    if (lexer_state != BareString) {
         LOG("Returning false: invalid state \"%d\"\n", lexer_state)
         return false;
     }

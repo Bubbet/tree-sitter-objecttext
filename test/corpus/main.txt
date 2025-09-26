@@ -215,8 +215,6 @@ OverheatEffects
 
 ===
 Block Single Line ; Seperator
-I dont know why this test fails, but it parses fine in prod
-:skip
 ===
 IsOperational { Type = StaticToggle; ToggleOn = true; }
 ---
@@ -283,7 +281,6 @@ IncrementButton : ^/0/IncrementButton { Active = false }
 
 ===
 Main
-:skip
 ===
 OverheatEffects
 		{
@@ -315,3 +312,157 @@ OverheatEffects
 			]
 		}
 ---
+(source_file
+    (block
+        (identifier)
+        (assignment
+            (identifier)
+            (value
+                (identifier)))
+        (assignment
+            (identifier)
+            (value
+                (identifier)))
+        (assignment
+            (identifier)
+            (value
+                (identifier)))
+        (list
+            (identifier)
+            (value
+                (block
+                    (assignment
+                        (identifier)
+                        (value
+                            (identifier)))
+                    (assignment
+                        (identifier)
+                        (value
+                            (identifier)))
+                    (block
+                        (identifier)
+                        (assignment
+                            (identifier)
+                            (value
+                                (number)))
+                        (list
+                            (identifier)
+                            (value
+                                (block
+                                    (assignment
+                                        (identifier)
+                                        (value
+                                            (identifier)))
+                                    (assignment
+                                        (identifier)
+                                        (value
+                                            (identifier)))))))
+                    (assignment
+                        (identifier)
+                        (value
+                            (bool
+                                (true))))
+                    (assignment
+                        (identifier)
+                        (value
+                            (bool
+                                (true))))
+                    (block
+                        (identifier)
+                        (assignment
+                            (identifier)
+                            (value
+                                (bool
+                                    (true))))))))))
+
+===
+Weird Whitespace
+===
+IssueSound
+{
+	RandomSounds = ["sounds/lock_target_detailed_01.wav",
+					"sounds/lock_target_detailed_02.wav",
+					"sounds/lock_target_detailed_03.wav"]
+	Volume = 1
+}
+---
+(source_file
+    (block
+        (identifier)
+        (list
+            (identifier)
+            (value
+                (string))
+            (value
+                (string))
+            (value
+                (string)))
+        (assignment
+            (identifier)
+            (value
+                (number)))))
+
+===
+Expression With No Spaces
+===
+TopLeftSprite     = { Texture=&~/LoadingBar/Texture; Source=[(&../../_X)+0,  (&../../_Y)+0,  32, 32]; }
+---
+(source_file
+    (block
+        (identifier)
+        (assignment
+            (identifier)
+            (value
+                (reference)))
+        (list
+            (identifier)
+            (value
+                (binary_expression
+                    (unary_expression
+                        (reference))
+                    (add)
+                    (number)))
+            (value
+                (binary_expression
+                    (unary_expression
+                        (reference))
+                    (add)
+                    (number)))
+            (value
+                (number))
+            (value
+                (number)))))
+
+===
+Negative Numbers
+===
+Rect
+{
+    Left = -150
+    Right = 150
+    Top = -48
+    Bottom = -24
+}
+---
+(source_file
+    (block
+        (identifier)
+        (assignment
+            (identifier)
+            (value
+                (unary_expression
+                    (number))))
+        (assignment
+            (identifier)
+            (value
+                (number)))
+        (assignment
+            (identifier)
+            (value
+                (unary_expression
+                    (number))))
+        (assignment
+            (identifier)
+            (value
+                (unary_expression
+                    (number))))))
