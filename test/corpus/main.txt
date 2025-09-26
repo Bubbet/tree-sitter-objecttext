@@ -70,7 +70,6 @@ Test : A, B; C {}
         (extension)
         (extension)))
 
-
 ===
 List Multi Extension
 ===
@@ -141,17 +140,6 @@ Test = ceil(0.5r, 50%)
                 (identifier)
                 (number)
                 (number)))))
-
-===
-Bare String
-===
-BareString = this shit sucks balls man
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_string))))
 
 ===
 Weird Reference
@@ -247,7 +235,6 @@ IsOperational { Type = StaticToggle; ToggleOn = true; }
 
 ===
 Chinese String With FormatArgs
-
 ===
 UploadingFmt = "正在上传至创意工坊……{0}%"
 ---
@@ -258,37 +245,7 @@ UploadingFmt = "正在上传至创意工坊……{0}%"
             (string))))
 
 ===
-Chinese Bare String With Trailing ":"
-
-===
-Visibility = 可见：
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_string))))
-
-===
-More Chinese Tests
-
-===
-FillIcon = 填充
-Line = 直线
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_string)))
-    (assignment
-        (identifier)
-        (value
-            (bare_string))))
-
-===
 Weird String Formatting
-
 ===
 HeatCapacityFmt = "{0:#,0.#;;0} <gray>兆焦</gray>"
 ---
@@ -297,32 +254,6 @@ HeatCapacityFmt = "{0:#,0.#;;0} <gray>兆焦</gray>"
         (identifier)
         (value
             (string))))
-
-===
-Assignment Weird Quote BareString
-===
-FameTitles = “不为人知”
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_string))))
-
-===
-Weird Quote Bare String
-===
-FameTitles
-[
-
-	“不为人知”
-]
----
-(source_file
-    (list
-        (identifier)
-        (value
-            (bare_string))))
 
 ===
 Extension With Reference Symbol
@@ -349,57 +280,6 @@ IncrementButton : ^/0/IncrementButton { Active = false }
             (value
                 (bool
                     (false))))))
-
-===
-More Broken Chinese Bare Strings
-===
-Title = 截图与Gif
----
-(source_file
-    (assignment
-        (identifier)
-        (value
-            (bare_string))))
-
-===
-Another Broken Chinese Bare String
-===
-ReputationTitles
-[
-
-	宿敌
-	仇视
-	敌人
-	厌恶
-	中立
-	合作
-	友好
-	友军
-	拥护
-]
----
-(source_file
-    (list
-        (identifier)
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))
-        (value
-            (bare_string))))
-
 
 ===
 Main

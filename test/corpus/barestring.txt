@@ -1,0 +1,114 @@
+﻿===
+Bare String
+===
+BareString = this shit sucks balls man
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Chinese Bare String With Trailing ":"
+===
+Visibility = 可见：
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+More Chinese Tests
+===
+FillIcon = 填充
+Line = 直线
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string)))
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Assignment Weird Quote BareString
+===
+FameTitles = “不为人知”
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Weird Quote Bare String
+===
+FameTitles
+[
+
+	“不为人知”
+]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+More Broken Chinese Bare Strings
+===
+Title = 截图与Gif
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Another Broken Chinese Bare String
+===
+ReputationTitles
+[
+
+	宿敌
+	仇视
+	敌人
+	厌恶
+	中立
+	合作
+	友好
+	友军
+	拥护
+]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))
+        (value
+            (bare_string))))
+

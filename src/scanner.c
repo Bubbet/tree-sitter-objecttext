@@ -25,22 +25,23 @@ enum {
 
 // FState
 enum {
-    Start,
-    MaybeIdentifierStartsPeriod,
-    Identifier,
-    Whitespace,
-    Slash,
-    MaybeCommentStart,
-    LineComment,
-    BlockComment,
-    BlockCommentMaybeEnd,
-    Quote,
-    QuoteBackslash,
-    VerbatimQuoteMaybeStartOrEnd,
-    VerbatimQuote,
-    AddToken,
-    Error,
+    Start, // 0
+    MaybeIdentifierStartsPeriod, // 1
+    Identifier, // 2
+    Whitespace, // 3
+    Slash, // 4
+    MaybeCommentStart, // 5
+    LineComment, // 6
+    BlockComment, // 7
+    BlockCommentMaybeEnd, // 8
+    Quote, // 9
+    QuoteBackslash, // 10
+    VerbatimQuoteMaybeStartOrEnd, // 11
+    VerbatimQuote, // 12
+    BareString, // 13
+    Error, // 14
 };
+
 
 void *tree_sitter_objecttext_external_scanner_create() { return NULL; }
 void tree_sitter_objecttext_external_scanner_destroy(void *payload) { (void) payload; }
@@ -90,11 +91,14 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
 
     int lexer_state = Start;
     bool has_stuff = false;
+    bool identifier_found = false;
+    bool probably_bare_string = false;
     while (!lexer->eof(lexer)) {
         const int32_t lookahead = lexer->lookahead;
 
         switch (lexer_state) {
             case Start:
+                start:
                 if (can_start_identifier(lookahead)) {
                     lexer_state = Identifier;
                     break;
@@ -106,6 +110,14 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 if (is_whitespace(lookahead)) {
                     lexer_state = Whitespace;
                     break;
+                }
+                if (is_terminator_char(lookahead)) {
+                    if (probably_bare_string) {
+                        lexer_state = BareString;
+                        goto break_loop;
+                    }
+                    lexer_state = Error;
+                    goto break_loop;
                 }
                 if (lookahead == 47) { // /
                     lexer_state = Slash;
@@ -120,7 +132,8 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     break;
                 }
                 if (lookahead >= 0) { // else
-                    lexer_state = AddToken;
+                    probably_bare_string = true;
+                    lexer_state = Start;
                     break; // TODO maybe break out of loop
                 }
                 break;
@@ -129,63 +142,34 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     lexer_state = Identifier;
                     break;
                 }
-                goto break_loop; // Was GOTO AddToken
+                if (is_terminator_char(lookahead)) {
+                    lexer_state = BareString;
+                    goto break_loop;
+                }
+                goto start;
             case Identifier:
                 if (is_identifier_char(lookahead)) {
                     break;
-                } // TODO dont goto break loop, we need to check for spaces followed by more identifiers AKA lexer_state = Start
-                goto break_loop; // Was GOTO AddToken
+                }
+                if (is_terminator_char(lookahead))
+                    goto break_loop;
+                identifier_found = true;
+                goto start;
             case Whitespace:
-                if (is_whitespace(lookahead)) break;
+                if (is_whitespace(lookahead)) {
+                    if (lookahead == '\n' && probably_bare_string) {
+                        lexer_state = BareString;
+                        goto break_loop;
+                    }
+                    break;
+                }
                 if (lookahead == 47) { // /
                     lexer_state = MaybeCommentStart;
-                } // TODO dont goto break loop, we need to check for spaces followed by more identifiers AKA lexer_state = Start
-                goto break_loop; // Was GOTO AddToken
-            // Start Probably Not Needed
-            case Slash:
-                if (lookahead == 42) { // *
-                    lexer_state = BlockComment;
-                    break;
                 }
-                if (lookahead == 47) { // /
-                    lexer_state = LineComment;
-                    break;
-                }
-                goto break_loop; // Was GOTO AddToken
-            case LineComment:
-                if (lookahead == 10) { // \n
-                    lexer_state = Whitespace;
-                    break;
-                }
-                if (lookahead >= 0) { // else
-                    break;
-                }
-                goto break_loop; // Was GOTO AddToken
-            case BlockComment:
-                if (lookahead == 42) { // *
-                    lexer_state = BlockCommentMaybeEnd;
-                    break;
-                }
-                if (lookahead >= 0) { // else
-                    break;
-                }
-                lexer_state = Error;
-                break; // Was GOTO Error
-            case BlockCommentMaybeEnd:
-                if (lookahead == 47) { // /
-                    lexer_state = Whitespace;
-                    break;
-                }
-                if (lookahead >= 0) { // else
-                    lexer_state = BlockComment;
-                    break;
-                }
-                goto break_loop; // Was GOTO AddToken
-            // End Probably Not Needed
+                goto start;
             case Quote:
                 if (lookahead == 34) { // "
-                    lexer_state = AddToken; // TODO this should probably just break out
-                    break;
+                    goto break_loop;
                 }
                 if (lookahead == 92) { // \ backslash
                     lexer_state = QuoteBackslash;
@@ -219,16 +203,15 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 }
                 lexer_state = Error;
                 break; // Was GOTO Error
-            case AddToken:
+            case BareString:
                 goto break_loop;
             default:
                 lexer_state = Error;
                 goto break_loop;
         }
 
-        lexer->mark_end(lexer);
         has_stuff = true;
-        LEXER_ADVANCE(lexer_state != Whitespace)
+        LEXER_ADVANCE(lexer_state == Whitespace)
     }
 
 break_loop:
@@ -237,11 +220,12 @@ break_loop:
         return false;
     }
 
-    if (lexer_state != AddToken) {
+    if (lexer_state != BareString && !identifier_found && !probably_bare_string) {
         LOG("Returning false: invalid state \"%d\"\n", lexer_state)
         return false;
     }
 
+    lexer->mark_end(lexer);
     lexer->result_symbol = BARE_STRING;
     LOG("Returning true\n")
     return true;
