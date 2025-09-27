@@ -75,7 +75,7 @@ static bool is_identifier_char(const int32_t c) {
 }
 
 static bool is_terminator_char(const int32_t c) {
-    return c == '\n' || c == '[' || c == ']' || c == '{' || c == '}' || c == ':' || c == '&' || c == ';' || c == ',';
+    return c == '\r' || c == '\n' || c == '[' || c == ']' || c == '{' || c == '}' || c == ':' || c == '&' || c == ';' || c == ',';
 }
 
 static bool is_whitespace_char(const int32_t c) {
