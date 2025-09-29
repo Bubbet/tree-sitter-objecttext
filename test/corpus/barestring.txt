@@ -166,3 +166,19 @@ HeaderDesired = Desejado(s)
         (identifier)
         (value
             (bare_string))))
+
+===
+Single Char Non Identifier
+===
+LeftBracket = (
+SlashQuestion = /
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string)))
+    (assignment
+            (identifier)
+            (value
+                (bare_string))))

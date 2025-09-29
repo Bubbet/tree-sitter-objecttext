@@ -43,6 +43,7 @@ enum {
     WhitespaceAfterIdentifier, // 15
     Number, // 16,
     MaybeIdentifierLower, // 17
+    SingleBareString, // 18
 };
 
 const char* StateNames[] = {
@@ -64,6 +65,7 @@ const char* StateNames[] = {
     "WhitespaceAfterIdentifier",
     "Number",
     "MaybeIdentifierLower",
+    "SingleBareString"
 };
 
 
@@ -114,7 +116,8 @@ static bool is_line_break_char(const int32_t c) {
 }
 
 static bool is_whitespace(const int32_t c) {
-    return c == 9 || c == 10 || c == 13 || c == 32 || c == 92;
+    //return c == 9 || c == 10 || c == 13 || c == 32 || c == 92;
+    return c == '\t' || c == '\n' || c == '\r' || c == ' ' || c == '\\';
 }
 
 static bool can_start_identifier(const int32_t c) {
@@ -127,6 +130,7 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
 
     int lexer_state = Start;
     bool has_stuff = false;
+    int parsed_chars = 1;
     while (!lexer->eof(lexer)) {
         const int32_t lookahead = lexer->lookahead;
 
@@ -158,16 +162,20 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     goto break_loop;
                 }
                 if (lookahead == '-' || lookahead == '(') {
+                    if (parsed_chars == 1) {
+                        lexer_state = SingleBareString;
+                        break;
+                    }
                     lexer_state = Error;
                     goto break_loop;
+                }
+                if (lookahead == '/' && parsed_chars == 1) { // /
+                    lexer_state = SingleBareString;
+                    break;
                 }
                 if (is_number_char(lookahead) || is_operator_char(lookahead)) {
                     lexer_state = Error;
                     goto break_loop;
-                }
-                if (lookahead == 47) { // /
-                    lexer_state = Slash;
-                    break;
                 }
                 if (lookahead == 34) { // "
                     lexer_state = Quote;
@@ -271,9 +279,6 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 if (is_whitespace(lookahead)) {
                     break;
                 }
-                if (lookahead == 47) { // /
-                    lexer_state = MaybeCommentStart;
-                }
                 if (is_terminator_char(lookahead)) {
                     lexer_state = Error;
                     goto break_loop;
@@ -315,6 +320,12 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 }
                 lexer_state = Error;
                 break; // Was GOTO Error
+            case SingleBareString:
+                if (is_line_break_char(lookahead) || is_whitespace(lookahead)) {
+                    goto break_loop;
+                }
+                lexer_state = Error;
+                goto break_loop;
             case BareString:
                 if (is_terminator_char(lookahead))
                     goto break_loop;
@@ -325,7 +336,10 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
         }
 
         has_stuff = true;
-        LEXER_ADVANCE(lexer_state == Whitespace)
+        bool was_whitespace = lexer_state == Whitespace;
+        LEXER_ADVANCE(was_whitespace)
+        if (!was_whitespace)
+            parsed_chars++;
     }
 
 break_loop:
@@ -334,7 +348,7 @@ break_loop:
         return false;
     }
 
-    if (lexer_state != BareString) {
+    if (!(lexer_state == BareString || lexer_state == SingleBareString)) {
         LOG("Returning false: invalid state \"%s\"\n", StateNames[lexer_state])
         return false;
     }
