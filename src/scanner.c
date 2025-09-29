@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-//#define SCANNER_LOGGING
+#define SCANNER_LOGGING
 #if defined(__EMSCRIPTEN__) || defined(__wasm__) || !defined(SCANNER_LOGGING)
 // WASM build: define as no-op
 #define LOG(...)
@@ -41,7 +41,8 @@ enum {
     BareString, // 13
     Error, // 14
     WhitespaceAfterIdentifier, // 15
-    Number, // 16
+    Number, // 16,
+    MaybeIdentifierLower, // 17
 };
 
 const char* StateNames[] = {
@@ -61,7 +62,8 @@ const char* StateNames[] = {
     "BareString",
     "Error",
     "WhitespaceAfterIdentifier",
-    "Number"
+    "Number",
+    "MaybeIdentifierLower",
 };
 
 
@@ -93,6 +95,10 @@ static bool is_identifier_char(const int32_t c) {
            (c >= 'A' && c <= 'Z') ||
            (c >= '0' && c <= '9') ||
            c == '_' || c == '.';
+}
+
+static bool lower_a_z(const int32_t c) {
+    return c >= 'a' && c <= 'z';
 }
 
 static bool is_terminator_char(const int32_t c) {
@@ -129,6 +135,10 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 start:
                 if (is_number_char(lookahead)) {
                     lexer_state = Number;
+                    break;
+                }
+                if (lower_a_z(lookahead)) {
+                    lexer_state = MaybeIdentifierLower;
                     break;
                 }
                 if (can_start_identifier(lookahead)) {
@@ -191,13 +201,27 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 }
                 lexer_state = Error;
                 goto break_loop;
-            case Identifier:
-                if (is_identifier_char(lookahead)) {
+            case MaybeIdentifierLower:
+                if (lower_a_z(lookahead)) {
                     break;
                 }
                 if (lookahead == '(') {
                     lexer_state = Error;
                     goto break_loop;
+                }
+                if (is_identifier_char(lookahead)) {
+                    lexer_state = Identifier;
+                    break;
+                }
+                lexer_state = Error;
+                goto break_loop;
+            case Identifier:
+                if (is_identifier_char(lookahead)) {
+                    break;
+                }
+                if (lookahead == '(') {
+                    lexer_state = BareString;
+                    break;
                 }
                 if (is_terminator_char(lookahead))
                     goto break_loop;
