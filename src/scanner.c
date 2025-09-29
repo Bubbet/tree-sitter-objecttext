@@ -224,7 +224,12 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     break;
                 }
                 */
-                goto break_loop;
+                if (is_whitespace(lookahead) || is_terminator_char(lookahead)) {
+                    goto break_loop;
+                }
+
+                lexer_state = BareString;
+                break;
             case WhitespaceAfterIdentifier:
                 if (is_whitespace(lookahead)) {
                     break;
