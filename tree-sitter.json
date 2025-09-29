@@ -9,6 +9,7 @@
       "file-types": [
         "rules"
       ],
+      "highlights": "queries/objecttext/highlights.scm",
       "injection-regex": "^objecttext$",
       "class-name": "TreeSitterObjecttext"
     }
@@ -25,7 +26,7 @@
       }
     ],
     "links": {
-      "repository": "https://github.com/tree-sitter/tree-sitter-objecttext"
+      "repository": "https://github.com/bubbet/tree-sitter-objecttext"
     }
   },
   "bindings": {

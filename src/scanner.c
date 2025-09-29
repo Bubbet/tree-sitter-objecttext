@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define SCANNER_LOGGING
+//#define SCANNER_LOGGING
 #if defined(__EMSCRIPTEN__) || defined(__wasm__) || !defined(SCANNER_LOGGING)
 // WASM build: define as no-op
 #define LOG(...)
