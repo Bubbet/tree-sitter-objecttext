@@ -541,3 +541,24 @@ Lore5 = "Citizenship is only granted to those individuals who were either living
         (identifier)
         (value
             (string))))
+
+===
+Number Modifiers
+===
+Percent = 40%
+Radians = 20r
+Degrees = 60d
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (number)))
+    (assignment
+        (identifier)
+        (value
+            (number)))
+    (assignment
+        (identifier)
+        (value
+            (number))))

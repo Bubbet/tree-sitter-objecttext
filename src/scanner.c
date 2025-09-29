@@ -44,6 +44,7 @@ enum {
     Number, // 16,
     MaybeIdentifierLower, // 17
     SingleBareString, // 18
+    NumberModifier, // 19
 };
 
 const char* StateNames[] = {
@@ -65,7 +66,8 @@ const char* StateNames[] = {
     "WhitespaceAfterIdentifier",
     "Number",
     "MaybeIdentifierLower",
-    "SingleBareString"
+    "SingleBareString",
+    "NumberModifier",
 };
 
 
@@ -86,6 +88,10 @@ void tree_sitter_objecttext_external_scanner_deserialize(void *payload, const ch
 
 static bool is_number_char(const int32_t c) {
     return c >= '0' && c <= '9';
+}
+
+static bool is_number_modifier_char(const int32_t c) {
+    return c == '%' || c == 'd' || c == 'r';
 }
 
 static bool is_operator_char(const int32_t c) {
@@ -246,6 +252,10 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 if (is_number_char(lookahead) || lookahead == '.') {
                     break;
                 }
+                if (is_number_modifier_char(lookahead)) {
+                    lexer_state = NumberModifier;
+                    break;
+                }
                 if (is_identifier_char(lookahead)) {
                     lexer_state = Identifier;
                     break;
@@ -260,6 +270,12 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     goto break_loop;
                 }
 
+                lexer_state = BareString;
+                break;
+            case NumberModifier:
+                if (is_whitespace(lookahead) || is_terminator_char(lookahead)) {
+                    goto break_loop;
+                }
                 lexer_state = BareString;
                 break;
             case WhitespaceAfterIdentifier:
