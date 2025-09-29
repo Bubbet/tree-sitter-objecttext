@@ -112,3 +112,35 @@ ReputationTitles
         (value
             (bare_string))))
 
+===
+Path Lookalike
+===
+TanPinkSilver = Hellbraun/Pink/Silber
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Loose File
+===
+File = ../common_effects/particles/noise_marble.png
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))
+
+===
+Math Lookalike
+===
+Block10x10 = 10x10-Block
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (bare_string))))

@@ -13,7 +13,7 @@
 #define LOG(...) printf(__VA_ARGS__);
 #endif
 
-#define LEXER_ADVANCE(...) LOG("Advancing from c:\"%c\" d:\"%d\" s:\"%d\"\n", lexer->lookahead, lexer->lookahead, lexer_state) \
+#define LEXER_ADVANCE(...) LOG("Advancing from c:\"%c\" d:\"%d\" s:\"%s\"\n", lexer->lookahead, lexer->lookahead, StateNames[lexer_state]) \
 lexer->advance(lexer, __VA_ARGS__); \
 LOG("New lookahead c:\"%c\" d:\"%d\"\n", lexer->lookahead, lexer->lookahead)
 
@@ -41,6 +41,27 @@ enum {
     BareString, // 13
     Error, // 14
     WhitespaceAfterIdentifier, // 15
+    Number, // 16
+};
+
+const char* StateNames[] = {
+    "Start",
+    "MaybeIdentifierStartsPeriod",
+    "Identifier",
+    "Whitespace",
+    "Slash",
+    "MaybeCommentStart",
+    "LineComment",
+    "BlockComment",
+    "BlockCommentMaybeEnd",
+    "Quote",
+    "QuoteBackslash",
+    "VerbatimQuoteMaybeStartOrEnd",
+    "VerbatimQuote",
+    "BareString",
+    "Error",
+    "WhitespaceAfterIdentifier",
+    "Number"
 };
 
 
@@ -106,6 +127,10 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
         switch (lexer_state) {
             case Start:
                 start:
+                if (is_number_char(lookahead)) {
+                    lexer_state = Number;
+                    break;
+                }
                 if (can_start_identifier(lookahead)) {
                     lexer_state = Identifier;
                     break;
@@ -148,15 +173,24 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 }
                 break;
             case MaybeIdentifierStartsPeriod:
+                if (is_number_char(lookahead)) {
+                    lexer_state = Number;
+                    break;
+                }
                 if (can_start_identifier(lookahead)) {
                     lexer_state = Identifier;
+                    break;
+                }
+                if (lookahead == '.') {
+                    lexer_state = BareString;
                     break;
                 }
                 if (is_terminator_char(lookahead)) {
                     lexer_state = BareString;
                     goto break_loop;
                 }
-                goto start;
+                lexer_state = Error;
+                goto break_loop;
             case Identifier:
                 if (is_identifier_char(lookahead)) {
                     break;
@@ -167,11 +201,30 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                 }
                 if (is_terminator_char(lookahead))
                     goto break_loop;
+                if (lookahead == '/' || lookahead == '-') {
+                    lexer_state = BareString;
+                    break;
+                }
                 if (is_whitespace(lookahead)) {
                     lexer_state = WhitespaceAfterIdentifier;
                     break;
                 }
                 goto start;
+            case Number:
+                if (is_number_char(lookahead) || lookahead == '.') {
+                    break;
+                }
+                if (is_identifier_char(lookahead)) {
+                    lexer_state = Identifier;
+                    break;
+                }
+                /*
+                if (is_whitespace(lookahead)) {
+                    lexer_state = WhitespaceAfterIdentifier;
+                    break;
+                }
+                */
+                goto break_loop;
             case WhitespaceAfterIdentifier:
                 if (is_whitespace(lookahead)) {
                     break;
@@ -253,7 +306,7 @@ break_loop:
     }
 
     if (lexer_state != BareString) {
-        LOG("Returning false: invalid state \"%d\"\n", lexer_state)
+        LOG("Returning false: invalid state \"%s\"\n", StateNames[lexer_state])
         return false;
     }
 

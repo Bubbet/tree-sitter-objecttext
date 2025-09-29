@@ -18,6 +18,11 @@ const PATH_FILE = "<[^>]+>(\/" + IDENTIFIER + "\)*" //"<[^>]+>(\/" + IDENTIFIER 
 const LEADING_GROUP = "\(\([.~]\/\)|\/\)?"
 const INTERNAL_IDENTIFIER = "\(" + IDENTIFIER + "|\\^|\(\\.\\.\))"
 const PATH_INTERNAL = LEADING_GROUP + INTERNAL_IDENTIFIER + "\(\\/" + INTERNAL_IDENTIFIER + "\)*" //"(~|\.|(\.\.))?\/?(" + IDENTIFIER + ")|\^(\/(" + IDENTIFIER + ")|\^)*"
+const TERMINATOR_INTERNAL = INTERNAL_IDENTIFIER + "\\\.[a-zA-Z_]+";
+const LOOSE_PATH_FILE = LEADING_GROUP + "\(" + TERMINATOR_INTERNAL + "|((" + INTERNAL_IDENTIFIER + "\/\)+" + TERMINATOR_INTERNAL + "\)\)";
+//LEADING_GROUP + "\(" + INTERNAL_IDENTIFIER + "\/|" + INTERNAL_IDENTIFIER + "\)";
+// ([.~]/)?(Identifier/|Identifier)*Identifier\.a-zA-Z_
+// (TerminatorInternal|((Identifier/)+TerminatorInternal))
 
 module.exports = grammar({
     name: "objecttext",
@@ -65,8 +70,9 @@ module.exports = grammar({
         ), optional($._split)),
 
         reference: $ => choice(
-            new RegExp("&" + PATH_FILE),
+            new RegExp("&?" + PATH_FILE),
             new RegExp("&" + PATH_INTERNAL),
+            //new RegExp(LOOSE_PATH_FILE),
         ),
 
         number: _ => {
@@ -118,8 +124,44 @@ module.exports = grammar({
         //bare_string: $ => token(prec(-2, /[^\n]+/)),
         //bare_string: $ => /[^\n(){}\[\]:;"&]*\n/,
         identifier: $ => new RegExp(IDENTIFIER),
-        string: $ => seq('"', /([^"]|(\\")|("\\\s*"))*/, '"'),
-        verbatim: $ => seq('@"', /([^"]|(\\")|("\\\s*"))*/, '"'),
+        _string_fragment: $ => seq(
+            '"',
+            repeat(choice(
+                /[^"\\]/,      // any char except " or \
+                /\\"/,         // escaped quote
+                /\\./          // other escapes
+            )),
+            '"'
+        ),
+        string: $ => choice(
+            seq(
+                $._string_fragment,
+                repeat(seq(
+                    /\\\r?\n/,  // line continuation
+                    $._string_fragment
+                ))
+            ),
+            /".*"\s*\n/
+        ),
+
+        _verbatim_fragment: $ => seq(
+            '@"',
+            repeat(choice(
+                /[^"\\]/,      // any char except " or \
+                /\\"/,         // escaped quote
+                /\\./          // other escapes
+            )),
+            '"'
+        ),
+        verbatim: $ => seq(
+            $._verbatim_fragment,
+            repeat(seq(
+                /\\\r?\n/,  // line continuation
+                choice($._verbatim_fragment, $._string_fragment)
+            ))
+        ),
+        //string: $ => seq('"', /([^"]|(\\")|("\\\s*"))*/, '"'),
+        //verbatim: $ => seq('@"', /([^"]|(\\")|("\\\s*"))*/, '"'),
         value: $ => choice(
             $.string,
             $.verbatim,

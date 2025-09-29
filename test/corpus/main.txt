@@ -466,3 +466,78 @@ Rect
             (value
                 (unary_expression
                     (number))))))
+
+===
+Same Line Comment
+===
+CommsModulesDefault
+[
+	{
+		Type = "Dialogue"
+		DefaultChanceToConsiderSurrenderingToPlayer = 0.9  //Chance that the ai will surrender to the player
+	}
+]
+---
+(source_file
+    (list
+        (identifier)
+        (value
+            (block
+                (assignment
+                    (identifier)
+                    (value
+                        (string)))
+                (assignment
+                    (identifier)
+                    (value
+                        (number)))
+                (comment)))))
+
+===
+Multi Line String
+===
+AttachScreenshotTip = "Takes a screenshot of the game and attaches it to the feedback. " \
+                      "The screenshot will include everything you currently see except for the \"Send Feedback\" window. " \
+                      "This will make it easier for us to fix bugs."
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (string))))
+
+===
+Long String
+===
+Title = "Centauri Imperium"
+Lore1 = "The Centauri Imperium is a young but ruthlessly-ambitious military empire originating in the Centaurus Constellation."
+Lore2 = "The systems of the Centaurus Constellation were originally governed by the Terran Union headquartered on Earth, but with the destruction of the whole Sol system fifty years ago, the Centaurus Constellation found itself suddenly independent with a galactic power vacuum in need of filling. After a brief ideological civil war within the Centaurus Constellation, the new Centauri Imperium emerged triumphant and quickly expanded its domain into the surrounding systems by conquest and intimidation. In just fifty short years, the Centauri Imperium has become the most powerful military force in the galaxy, controlling nearly half of all known systems and poised to soon conquer the rest."
+Lore3 = "The Centauri Imperium is uniquely flat in its organizational structures, both civilian and military. As a true direct democracy, every citizen of the core Centaurus systems above the age of 12 EY is entitled to propose laws and vote on every piece of legislation, a process which is handled via faster-than-light communications and a distributed public blockchain. Even the most important decisions, such as whether to accept the terms of surrender of the latest conquered star system, can be made in minutes by instantly notifying the entire citizenry of an impending vote. As such, most Centauri citizens feel an extreme responsibility to stay informed of the various issues facing the Imperium, and civic engagement is very high. There is no single \"head of state\", and to the extent to which there is any concentration of power, it is in celebrities who are able to influence their followers to vote a particular way."
+Lore4 = "The Centauri military is only slightly more hierarchical than its civilian government. Because being able to make instant decisions during combat is critical, most ships do have a captain, but one that is elected by its crew and can be replaced by popular vote at any time. Each ship is an independent entity with the freedom to make its own tactical decisions, constrained only by the few rules of engagement mandated by the Imperium's citizens. (And those citizens have deemed that almost any means are acceptable as long as the ends bring further wealth and prosperity to the core Centaurus systems.) This decentralized \"almost anything goes\" approach makes the Imperium's military nimble and ruthless. Larger strategic objectives are coordinated using bounties authorized by the citizenry, such as a reward for forcing the surrender of a particular star system. In order to accomplish these larger strategic objectives, individual ships will often form ad-hoc fleets that will then disband once the objective is accomplished. In some cases, multiple fleets will form to compete for the same bounty, which is allowed and encouraged as a healthy aspect of the "military free market", though direct combat between Centauri ships or fleets is strictly forbidden and punishable by \"death by destruction bounty\". In cases where multiple ships or fleets lay claim to the same bounty, it is, as always, the Centauri citizenry who act as final arbiter."
+Lore5 = "Citizenship is only granted to those individuals who were either living within the core Centaurus systems when the Imperium was formed or are children whose parents are <i>both</i> Centauri citizens. The only exceptions must be approved by the whole citizenry, making naturalized citizens extremely rare. (Generally only individuals who have been of great service to the Imperium are given the honor.) As a result, the vast majority of subjects living outside the core systems are not Centauri citizens and thus do not enjoy any semblance of autonomy or self-governance. For all their talk of democracy and equality, the core systems impose a harsh double-standard on the conquered territories, ruling them with an iron fist."
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (string)))
+    (assignment
+        (identifier)
+        (value
+            (string)))
+    (assignment
+        (identifier)
+        (value
+            (string)))
+    (assignment
+        (identifier)
+        (value
+            (string)))
+    (assignment
+        (identifier)
+        (value
+            (string)))
+    (assignment
+        (identifier)
+        (value
+            (string))))

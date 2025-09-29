@@ -379,7 +379,7 @@
       "members": [
         {
           "type": "PATTERN",
-          "value": "&<[^>]+>(\\/\\.?[a-zA-Z0-9_][a-zA-Z0-9_\\.]*)*"
+          "value": "&?<[^>]+>(\\/\\.?[a-zA-Z0-9_][a-zA-Z0-9_\\.]*)*"
         },
         {
           "type": "PATTERN",
@@ -967,7 +967,7 @@
       "type": "PATTERN",
       "value": "\\.?[a-zA-Z0-9_][a-zA-Z0-9_\\.]*"
     },
-    "string": {
+    "_string_fragment": {
       "type": "SEQ",
       "members": [
         {
@@ -975,8 +975,91 @@
           "value": "\""
         },
         {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "PATTERN",
+                "value": "[^\"\\\\]"
+              },
+              {
+                "type": "PATTERN",
+                "value": "\\\\\""
+              },
+              {
+                "type": "PATTERN",
+                "value": "\\\\."
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "\""
+        }
+      ]
+    },
+    "string": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_string_fragment"
+            },
+            {
+              "type": "REPEAT",
+              "content": {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "PATTERN",
+                    "value": "\\\\\\r?\\n"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_string_fragment"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
           "type": "PATTERN",
-          "value": "([^\"]|(\\\\\")|(\"\\\\\\s*\"))*"
+          "value": "\".*\"\\s*\\n"
+        }
+      ]
+    },
+    "_verbatim_fragment": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "@\""
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "PATTERN",
+                "value": "[^\"\\\\]"
+              },
+              {
+                "type": "PATTERN",
+                "value": "\\\\\""
+              },
+              {
+                "type": "PATTERN",
+                "value": "\\\\."
+              }
+            ]
+          }
         },
         {
           "type": "STRING",
@@ -988,16 +1071,33 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
-          "value": "@\""
+          "type": "SYMBOL",
+          "name": "_verbatim_fragment"
         },
         {
-          "type": "PATTERN",
-          "value": "([^\"]|(\\\\\")|(\"\\\\\\s*\"))*"
-        },
-        {
-          "type": "STRING",
-          "value": "\""
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "PATTERN",
+                "value": "\\\\\\r?\\n"
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "_verbatim_fragment"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_string_fragment"
+                  }
+                ]
+              }
+            ]
+          }
         }
       ]
     },
