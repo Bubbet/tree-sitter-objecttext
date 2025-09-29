@@ -562,3 +562,18 @@ Degrees = 60d
         (identifier)
         (value
             (number))))
+
+===
+Expression Simple No Space
+===
+Size = 38/46
+---
+(source_file
+    (assignment
+        (identifier)
+        (value
+            (binary_expression
+                (number)
+                (div)
+                (number)))))
+

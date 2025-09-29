@@ -260,6 +260,10 @@ bool tree_sitter_objecttext_external_scanner_scan(void *payload, TSLexer *lexer,
                     lexer_state = Identifier;
                     break;
                 }
+                if (is_operator_char(lookahead)) {
+                    lexer_state = Error;
+                    goto break_loop;
+                }
                 /*
                 if (is_whitespace(lookahead)) {
                     lexer_state = WhitespaceAfterIdentifier;
